@@ -65,6 +65,30 @@
       name: '霓虹科技',
       desc: '深底发光描边与渐变光带，赛博感强，适合信息科技与编程',
       hint: 'Neon'
+    },
+    {
+      id: 'blueprint',
+      name: '蓝图工程',
+      desc: '细网格、双线图框与等宽标注，像一张工程图纸，适合理科与通用技术',
+      hint: 'Blueprint'
+    },
+    {
+      id: 'paper',
+      name: '手账笔记',
+      desc: '点阵纸、和纸胶带与便签卡片，轻松有手作感，适合备课与班会',
+      hint: 'Bullet Journal'
+    },
+    {
+      id: 'deco',
+      name: '装饰艺术',
+      desc: '对称构图、金色双线框与放射纹，典雅有仪式感，适合公开课与汇演',
+      hint: 'Art Deco'
+    },
+    {
+      id: 'zen',
+      name: '留白禅意',
+      desc: '大留白、细线与一枚淡墨圆相，克制安静，适合语文与美育',
+      hint: 'Zen'
     }
   ];
 
@@ -180,6 +204,38 @@
         bg: '#f8f3ed', surface: '#ece2d5', text: '#2a1f17', muted: '#7a6655',
         primary: '#6f4a2f', accent: '#c98a3c', line: 'rgba(42,31,23,.12)'
       }
+    },
+    {
+      id: 'ice',
+      name: '冰蓝',
+      colors: {
+        bg: '#f3f9fd', surface: '#e7f3fb', text: '#10293d', muted: '#4a6b80',
+        primary: '#2b8cc4', accent: '#e08a4f', line: 'rgba(16,41,61,.10)'
+      }
+    },
+    {
+      id: 'forest-2',
+      name: '深林',
+      colors: {
+        bg: '#0c1e18', surface: '#12291f', text: '#e8f6ee', muted: '#9cb9a9',
+        primary: '#55c48d', accent: '#e0b25c', line: 'rgba(232,246,238,.14)'
+      }
+    },
+    {
+      id: 'mono-warm',
+      name: '暖灰',
+      colors: {
+        bg: '#f4f1ec', surface: '#e9e4dc', text: '#2a2622', muted: '#6b6359',
+        primary: '#5f574d', accent: '#b07d46', line: 'rgba(42,38,34,.12)'
+      }
+    },
+    {
+      id: 'candy-2',
+      name: '糖果紫',
+      colors: {
+        bg: '#fbf7ff', surface: '#f2e9ff', text: '#2b1b3d', muted: '#7c6a92',
+        primary: '#7c4dd6', accent: '#e26fa8', line: 'rgba(43,27,61,.10)'
+      }
     }
   ];
 
@@ -223,6 +279,16 @@
       id: 'condensed', name: '窄体标题',
       heading: '"Arial Narrow","Impact","Haettenschweiler","Microsoft YaHei","PingFang SC",sans-serif',
       body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'rounded-serif', name: '圆衬线标题',
+      heading: '"Bookman Old Style",Georgia,"Songti SC","SimSun","Source Han Serif SC",serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'serif-modern', name: '现代宋体标题',
+      heading: '"Songti SC","Source Han Serif SC","Noto Serif CJK SC","SimSun",Georgia,serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
     }
   ];
 
@@ -236,7 +302,9 @@
     { id: 'zoom-in', name: '缩放淡入', cssClass: 'anim-zoom-in' },
     { id: 'wipe-up', name: '自下擦除', cssClass: 'anim-wipe-up' },
     { id: 'flip', name: '3D 轻翻转', cssClass: 'anim-flip' },
-    { id: 'blur-in', name: '模糊聚焦', cssClass: 'anim-blur-in' }
+    { id: 'blur-in', name: '模糊聚焦', cssClass: 'anim-blur-in' },
+    { id: 'slide-right', name: '右侧滑入', cssClass: 'anim-slide-right' },
+    { id: 'pop-in', name: '弹入', cssClass: 'anim-pop-in' }
   ];
 
   function get(theme) {
