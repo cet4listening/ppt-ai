@@ -604,7 +604,7 @@
         fill: { color: T.colors.accent }, line: { color: T.colors.accent, width: 0 }
       });
 
-      var items = ((col && col.items) || []).map(asText).filter(function (x) { return x; });
+      var items = ((col && (col.items || col.bullets)) || []).map(asText).filter(function (x) { return x; });
       var fs = bulletsFontSize(items.length) - 2;
       if (fs < 11) fs = 11;
       if (items.length) {
@@ -924,6 +924,15 @@
           title: asText(s.title) || '第 ' + (i + 1) + ' 页',
           bullets: [asText(s.subtitle) || '（本页内容无法渲染）']
         }, Ti, i, total);
+      }
+      var hw = asText(s.homework);
+      if (hw && slide && typeof slide.addText === 'function') {
+        try {
+          slide.addText([
+            { text: '课后思考  ', options: { bold: true, color: Ti.colors.primary, fontSize: 11 } },
+            { text: hw, options: { color: Ti.colors.muted, fontSize: 11 } }
+          ], { x: 0.62, y: 4.98, w: 8.7, h: 0.42, fontFace: Ti.fontBody, valign: 'middle', margin: 0 });
+        } catch (e) { /* ignore */ }
       }
       var notes = asText(s.notes);
       if (notes && slide && typeof slide.addNotes === 'function') {
