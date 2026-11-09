@@ -192,7 +192,6 @@
           <button class="btn" id="btn-present">▶ 全屏放映</button>
           <button class="btn" id="btn-print">打印 / PDF</button>
           <button class="btn primary" id="btn-export-pptx">导出 PPTX</button>
-        <button class="btn" id="btn-export-reveal" title="每条要点单独一页，播放时就是逐条出现（兼容所有播放器）">导出逐条版</button>
         </div>
       </div>
       <div class="deck-tools">
@@ -219,6 +218,7 @@
         <label class="chk-line"><input type="checkbox" id="set-remember" checked> 在这台电脑记住 Key（取消勾选 = 只在当前标签页有效）</label>
     </label>
     <label class="chk-line chk-block"><input type="checkbox" id="set-reveal" checked> 放映时逐条显示（点一下出现下一块内容）</label>
+    <label class="chk-line chk-block"><input type="checkbox" id="set-export-progressive" checked> 导出的 PPTX 按「逐条」拆页（点击逐条出现，WPS/PowerPoint 都一致）</label>
     <label>模型
       <input id="set-model" type="text" list="model-list" placeholder="deepseek-chat" autocomplete="off">
       <datalist id="model-list">
