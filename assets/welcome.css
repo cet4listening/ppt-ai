@@ -10,7 +10,8 @@
   place-items: center;
   overflow: hidden;
   background:
-    radial-gradient(760px 460px at 50% 54%, rgba(4, 7, 18, .66) 0%, rgba(4, 7, 18, .22) 62%, rgba(4, 7, 18, 0) 100%),
+    radial-gradient(560px 340px at 50% 51%, rgba(4, 7, 18, .80) 0%, rgba(4, 7, 18, .52) 46%, rgba(4, 7, 18, .10) 76%, rgba(4, 7, 18, 0) 100%),
+    radial-gradient(900px 560px at 50% 54%, rgba(4, 7, 18, .40) 0%, rgba(4, 7, 18, .12) 70%, rgba(4, 7, 18, 0) 100%),
     linear-gradient(180deg, rgba(4, 7, 18, .66) 0%, rgba(4, 7, 18, .50) 34%, rgba(4, 7, 18, .80) 100%),
     url("img/welcome-bg.jpg") center 16% / cover no-repeat,
     #0b0f26;
