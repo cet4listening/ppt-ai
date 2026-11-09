@@ -7,8 +7,11 @@
 <title>好想睡觉的ppt小屋 · 一句话生成 PPT 课件</title>
 <link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="shortcut icon" href="assets/img/favicon.ico">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https:; worker-src 'self' blob:">
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/themes.css">
+<link rel="stylesheet" href="assets/welcome.css">
 </head>
 <body>
 
@@ -51,7 +54,7 @@
 
     <div class="composer">
       <div class="attach-strip" id="attach-strip"></div>
-      <textarea id="prompt" rows="2" placeholder="说说你要做什么课件，例如：帮我生成一个小学三年级英语第一节课的 PPT 课件"></textarea>
+      <textarea id="prompt" maxlength="2000" rows="2" placeholder="说说你要做什么课件，例如：帮我生成一个小学三年级英语第一节课的 PPT 课件"></textarea>
       <div class="composer-bar">
         <button class="btn tiny" id="btn-attach" title="上传资料 / 图片 / 视频">📎 上传</button>
         <label class="switch" title="开启后会先联网检索再生成">
@@ -189,6 +192,7 @@
     </label>
     <label>API Key
       <input id="set-apikey" type="password" placeholder="sk-..." autocomplete="off">
+        <label class="chk-line"><input type="checkbox" id="set-remember" checked> 在这台电脑记住 Key（取消勾选 = 只在当前标签页有效）</label>
     </label>
     <label>模型
       <input id="set-model" type="text" list="model-list" placeholder="deepseek-chat" autocomplete="off">
@@ -226,6 +230,7 @@
 <script src="assets/files.js"></script>
 <script src="assets/render.js"></script>
 <script src="assets/export.js"></script>
+<script src="assets/welcome.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
