@@ -148,7 +148,13 @@
 
   function styleIdOf(resolved) {
     var id = resolved && resolved.style && resolved.style.id;
-    return SLIDE_TYPES && ['editorial', 'corporate', 'playful', 'tech', 'warm'].indexOf(id) >= 0 ? id : 'editorial';
+    if (!id) return 'editorial';
+    // 以 PRESETS.styles 为准（风格库会持续扩充），找不到时回落到 editorial
+    var P = global.PRESETS;
+    if (P && Array.isArray(P.styles) && P.styles.length) {
+      return P.styles.some(function (x) { return x && x.id === id; }) ? id : 'editorial';
+    }
+    return 'editorial';
   }
 
   function titleSizeClass(t, base) {
@@ -281,7 +287,7 @@
     var textC = parseColor(colors.text) || { r: 17, g: 24, b: 39 };
     var primary = parseColor(colors.primary) || { r: 37, g: 99, b: 235 };
     var accent = parseColor(colors.accent) || { r: 245, g: 158, b: 11 };
-    var darkStyle = styleId === 'corporate' || styleId === 'tech';
+    var darkStyle = styleId === 'corporate' || styleId === 'tech' || styleId === 'neon';
 
     // 商务深色 / 科技渐变：若用户选了浅色配色，自动推导一套深色方案，保证风格成立
     if (darkStyle && luminance(bg) > 0.42) {
@@ -593,6 +599,7 @@
     el.dataset.type = type;
     el.setAttribute('aria-label', '第 ' + (index + 1) + ' 页：' + (text(slide.title) || type || '幻灯片'));
     el.style.setProperty('--pp-i', String(index));
+    if (opts && opts.theme) applyVars(el, opts.theme);
 
     var body = '';
     try {
@@ -655,6 +662,22 @@
   /* ============================================================
      renderDeck / renderThumb
      ============================================================ */
+
+  /* ---- 逐页主题：把某页的 slide.theme 合并到全局 theme 上 ---- */
+  function themeFor(theme, slide) {
+    var t = slide && slide.theme;
+    if (!t) return theme;
+    var merged = {}, k, has = false;
+    for (k in theme) { if (Object.prototype.hasOwnProperty.call(theme, k)) merged[k] = theme[k]; }
+    for (k in t) {
+      if (!Object.prototype.hasOwnProperty.call(t, k)) continue;
+      var v = t[k];
+      if (v === '' || v == null) continue;
+      merged[k] = v; has = true;
+    }
+    return has ? merged : theme;
+  }
+
   function renderDeck(rootEl, deck, theme, opts) {
     if (!rootEl) return null;
     opts = opts || {};
@@ -681,9 +704,12 @@
       var frame = document.createElement('div');
       frame.className = 'slide-frame' + (single ? (i === focus ? ' is-current' : ' is-hidden') : '');
       frame.dataset.index = String(i);
-      var slideEl = buildSlide(slide, deck, i, total, resolved, {
+      var oneTheme = themeFor(theme, slide);
+      var oneResolved = (oneTheme === theme) ? resolved : resolve(oneTheme);
+      var slideEl = buildSlide(slide, deck, i, total, oneResolved, {
         pageNumbers: opts.pageNumbers !== false,
-        static: opts.animate === false
+        static: opts.animate === false,
+        theme: (oneTheme === theme) ? null : oneTheme
       });
       frame.appendChild(slideEl);
       deckEl.appendChild(frame);
@@ -708,6 +734,7 @@
 
   function renderThumb(el, slide, deck, theme) {
     if (!el) return null;
+    theme = themeFor(theme, slide);
     var resolved = applyVars(el, theme);
     stopWatch(el);
     el.innerHTML = '';
