@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI 课件工坊 —— 一句话生成高质量 PPT 课件：联网检索、内容分章、风格配色自选、动画放映、一键导出 PPTX">
+<title>AI 课件工坊 · 一句话生成 PPT 课件</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f46e5'/%3E%3Cpath d='M18 44V20h10a10 10 0 0 1 0 20h-4v4z' fill='white'/%3E%3Ccircle cx='45' cy='42' r='4' fill='%23fbbf24'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/themes.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-logo">P</div>
+    <div class="brand-text">
+      <strong>AI 课件工坊</strong>
+      <span>联网检索 · 自动分章 · 风格自选 · 一键导出</span>
+    </div>
+  </div>
+
+  <ol class="steps" id="steps">
+    <li data-step="1" class="is-current"><b>1</b><span>需求</span></li>
+    <li data-step="2"><b>2</b><span>大纲</span></li>
+    <li data-step="3"><b>3</b><span>风格</span></li>
+    <li data-step="4"><b>4</b><span>成品</span></li>
+  </ol>
+
+  <div class="topbar-right">
+    <span class="model-chip" id="model-chip" title="点击设置 API">未配置模型</span>
+    <button class="btn ghost" id="btn-settings">设置</button>
+  </div>
+</header>
+
+<main class="shell">
+  <!-- ============ 左：对话 ============ -->
+  <section class="chat">
+    <div class="chat-head">
+      <h2>对话</h2>
+      <button class="btn tiny ghost" id="btn-clear">清空</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="sources" id="sources" hidden>
+      <div class="sources-head"><span>联网检索结果</span><button class="btn tiny ghost" id="btn-sources-toggle">收起</button></div>
+      <div class="sources-body" id="sources-body"></div>
+    </div>
+
+    <div class="composer">
+      <div class="attach-strip" id="attach-strip"></div>
+      <textarea id="prompt" rows="2" placeholder="说说你要做什么课件，例如：帮我生成一个小学三年级英语第一节课的 PPT 课件"></textarea>
+      <div class="composer-bar">
+        <button class="btn tiny" id="btn-attach" title="上传资料 / 图片 / 视频">📎 上传</button>
+        <label class="switch" title="开启后会先联网检索再生成">
+          <input type="checkbox" id="opt-search" checked><i></i><span>联网检索</span>
+        </label>
+        <span class="composer-hint" id="composer-hint">Ctrl + Enter 发送</span>
+        <button class="btn primary" id="btn-send">生成大纲</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 右：工作区 ============ -->
+  <section class="stage">
+
+    <!-- 空状态 -->
+    <div class="stage-empty" id="stage-empty">
+      <div class="empty-art">
+        <span class="deco d1"></span><span class="deco d2"></span><span class="deco d3"></span>
+        <div class="empty-title">一句话，生成一份能直接讲的课件</div>
+        <p>输入主题 → 联网找资料 → 自动拆分章节 → 选风格配色 → 生成带动画的 PPT，可导出 .pptx</p>
+      </div>
+      <div class="examples" id="examples">
+        <button class="example" data-prompt="帮我生成一个小学三年级英语第一节课内容的 PPT，包含字母和简单问候语，适合 40 分钟课堂">
+          <b>小学三年级英语 · 第一课</b><span>字母 A–G + 简单问候</span>
+        </button>
+        <button class="example" data-prompt="帮我做一份初中物理《光的折射》课件，要有实验演示步骤和生活例子，适合 45 分钟课堂">
+          <b>初中物理 · 光的折射</b><span>实验 + 生活实例</span>
+        </button>
+        <button class="example" data-prompt="帮我生成一份《人工智能是什么》的科普 PPT，面向小学高年级学生，要通俗有趣，带互动提问">
+          <b>科普 · 人工智能</b><span>面向小学高年级</span>
+        </button>
+      </div>
+      <div class="empty-steps">
+        <div><b>1</b> 说需求 / 传资料</div>
+        <div><b>2</b> 检查自动分章</div>
+        <div><b>3</b> 挑风格与配色</div>
+        <div><b>4</b> 放映 / 导出 PPTX</div>
+      </div>
+    </div>
+
+    <!-- 面板 2：大纲 -->
+    <div class="stage-panel" id="panel-outline" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>第 2 步 · 内容结构</h2>
+          <p class="muted" id="outline-sub">下面是 AI 拆分出的章节，可以直接改标题、要点、增删页面。</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btn-replan">重新规划</button>
+          <button class="btn primary" id="btn-to-style">下一步：选风格 →</button>
+        </div>
+      </div>
+      <div class="deck-meta" id="deck-meta"></div>
+      <div class="outline-list" id="outline-list"></div>
+      <div class="outline-foot">
+        <button class="btn ghost" id="btn-add-slide">＋ 添加一页</button>
+        <span class="muted" id="outline-count"></span>
+      </div>
+    </div>
+
+    <!-- 面板 3：风格 -->
+    <div class="stage-panel" id="panel-style" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>第 3 步 · 风格与配色</h2>
+          <p class="muted">先挑版式风格，再调配色、字体和动画，右侧实时预览。</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btn-back-outline">← 回到大纲</button>
+          <button class="btn primary" id="btn-to-deck">生成演示文稿 →</button>
+        </div>
+      </div>
+
+      <div class="style-layout">
+        <div class="style-controls">
+          <div class="style-block">
+            <h3>版式风格</h3>
+            <div class="card-row" id="style-cards"></div>
+          </div>
+          <div class="style-block">
+            <h3>配色主题</h3>
+            <div class="swatch-row" id="palette-row"></div>
+          </div>
+          <div class="style-block split">
+            <div>
+              <h3>字体</h3>
+              <div class="chip-row" id="font-row"></div>
+            </div>
+            <div>
+              <h3>动画</h3>
+              <div class="chip-row" id="anim-row"></div>
+            </div>
+          </div>
+        </div>
+        <div class="style-preview">
+          <div class="preview-label">实时预览</div>
+          <div class="preview-stage" id="preview-stage"></div>
+          <div class="preview-cap" id="preview-cap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 面板 4：成品 -->
+    <div class="stage-panel" id="panel-deck" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>第 4 步 · 成品</h2>
+          <p class="muted" id="deck-sub">点击任意一页可放大查看；放映时用 ← → 翻页。</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btn-back-style">← 改风格</button>
+          <button class="btn" id="btn-present">▶ 全屏放映</button>
+          <button class="btn" id="btn-print">打印 / PDF</button>
+          <button class="btn primary" id="btn-export-pptx">导出 PPTX</button>
+        </div>
+      </div>
+      <div class="deck-tools">
+        <button class="btn tiny ghost" id="btn-export-img">导出图片版（像素级还原）</button>
+        <span class="muted" id="deck-info"></span>
+      </div>
+      <div class="deck-grid" id="deck-grid"></div>
+    </div>
+
+  </section>
+</main>
+
+<!-- 设置 -->
+<dialog class="dlg" id="dlg-settings">
+  <form method="dialog" class="dlg-body" id="settings-form">
+    <h2>模型设置</h2>
+    <p class="muted">本页在浏览器里直接调用 DeepSeek / OpenAI 兼容接口，Key 只保存在你本机浏览器，不会上传到任何服务器。</p>
+
+    <label>接口地址（Base URL）
+      <input id="set-baseurl" type="text" placeholder="https://api.deepseek.com/v1" autocomplete="off">
+    </label>
+    <label>API Key
+      <input id="set-apikey" type="password" placeholder="sk-..." autocomplete="off">
+    </label>
+    <label>模型
+      <input id="set-model" type="text" list="model-list" placeholder="deepseek-chat" autocomplete="off">
+      <datalist id="model-list">
+        <option value="deepseek-chat"></option>
+        <option value="deepseek-reasoner"></option>
+        <option value="gpt-4o-mini"></option>
+      </datalist>
+    </label>
+    <label>搜索代理（可选，留空用内置公共代理）
+      <input id="set-proxy" type="text" placeholder="https://你的worker地址/?url={url}" autocomplete="off">
+    </label>
+
+    <div class="dlg-actions">
+      <button class="btn ghost" type="button" id="btn-test">测试连接</button>
+      <span class="dlg-status" id="test-status"></span>
+      <span class="grow"></span>
+      <button class="btn" value="cancel">取消</button>
+      <button class="btn primary" id="btn-save-settings" value="default">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts"></div>
+<input type="file" id="file-input" multiple hidden>
+
+<!-- 依赖库（本地 vendor 优先，缺失时回退 CDN） -->
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/mammoth.browser.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/pptxgen.js"></script>
+
+<script src="assets/presets.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/files.js"></script>
+<script src="assets/render.js"></script>
+<script src="assets/export.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

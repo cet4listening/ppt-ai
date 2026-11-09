@@ -1,0 +1,75 @@
+{
+  "title": "小学三年级英语 · 第一节课 Hello!",
+  "subtitle": "Unit 1 Greetings · 字母 A–G 与简单问候",
+  "meta": { "grade": "小学三年级", "subject": "英语", "minutes": 40 },
+  "slides": [
+    {
+      "type": "cover",
+      "title": "Hello! 你好！",
+      "subtitle": "Unit 1 · 第一节课",
+      "notes": "开场用 Hello 和学生打招呼，让他们跟着回应。"
+    },
+    {
+      "type": "section",
+      "title": "今天我们要学什么",
+      "subtitle": "三个小目标",
+      "notes": "先给整节课一个地图，学生更有方向感。"
+    },
+    {
+      "type": "bullets",
+      "title": "三个小目标",
+      "bullets": ["认识字母 A–G 的读音和写法", "会用 Hello / Hi 打招呼", "会用 My name is… 介绍自己"],
+      "notes": "逐条读一遍，让学生跟读关键词。"
+    },
+    {
+      "type": "bullets",
+      "title": "字母 A–G，一起读",
+      "bullets": ["A a — apple 苹果", "B b — ball 球", "C c — cat 猫", "D d — dog 狗", "E e — egg 鸡蛋", "F f — fish 鱼", "G g — girl 女孩"],
+      "notes": "老师带读两遍，再请两位学生单独读。"
+    },
+    {
+      "type": "two-col",
+      "title": "Hello 还是 Hi？",
+      "columns": [
+        { "title": "在学校", "items": ["早上见到老师说 Good morning", "同学之间可以说 Hi", "正式一点用 Hello"] },
+        { "title": "在家里", "items": ["和爸爸妈妈说 Hello", "出门前说 Goodbye", "睡前说 Good night"] }
+      ],
+      "notes": "让学生两两练习，一个当老师一个当学生。"
+    },
+    {
+      "type": "stats",
+      "title": "今天要记住的数字",
+      "stats": [
+        { "value": "7", "label": "个新字母 A–G" },
+        { "value": "2", "label": "个问候语 Hello / Hi" },
+        { "value": "1", "label": "句自我介绍" }
+      ],
+      "notes": "用数字帮学生抓住重点。"
+    },
+    {
+      "type": "quote",
+      "title": "",
+      "quote": "Hello! My name is Lily. Nice to meet you!",
+      "author": "跟着老师一起说三遍",
+      "notes": "先慢速带读，再正常速度，最后请学生上台表演。"
+    },
+    {
+      "type": "list",
+      "title": "课堂小活动",
+      "bullets": ["两人一组，用 Hello 互相打招呼", "说出自己的英文名字", "把 A–G 写在练习本上，每行三遍"],
+      "notes": "活动 1 用 5 分钟，活动 2 用 3 分钟，书写留到课后。"
+    },
+    {
+      "type": "bullets",
+      "title": "回家要做的事",
+      "bullets": ["读三遍 A–G 给家长听", "用英语和家里人打招呼", "准备一个自己的英文名字"],
+      "notes": "作业要具体，让学生知道做什么、做多久。"
+    },
+    {
+      "type": "end",
+      "title": "Thank you! 谢谢！",
+      "subtitle": "See you next class.",
+      "notes": "和学生说 Goodbye，结束课程。"
+    }
+  ]
+}

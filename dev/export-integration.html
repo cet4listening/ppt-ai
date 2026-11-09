@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>export.js × 真实 presets/render 集成测试</title>
+<link rel="stylesheet" href="../assets/themes.css">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { font: 14px/1.6 -apple-system, "Microsoft YaHei", sans-serif; margin: 24px; background: #111; color: #eee; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #333; padding: 6px 8px; text-align: left; }
+  .ok { color: #6ee7a0; } .bad { color: #ff8080; }
+  #state { font-weight: 700; color: #93c5fd; }
+</style>
+</head>
+<body>
+<h1>export.js 集成测试（真实 presets.js / render.js / themes.css）</h1>
+<p id="state">running…</p>
+<table id="out"><thead><tr><th>用例</th><th>结果</th><th>细节</th></tr></thead><tbody></tbody></table>
+
+<script src="../assets/presets.js"></script>
+<script src="../assets/render.js"></script>
+<script src="../assets/export.js"></script>
+<script>
+(function () {
+  'use strict';
+  var RESULTS = [];
+  var STATE = 'running';
+  var STEP = 'init';
+  var BLOBS = {};
+  var STATS = {};
+
+  function step(s) { STEP = s; window.__STEP = s; }
+  function record(name, ok, detail) {
+    RESULTS.push({ name: name, ok: !!ok, detail: String(detail == null ? '' : detail) });
+    return !!ok;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function blobToB64(blob) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        var s = String(fr.result);
+        resolve(s.slice(s.indexOf(',') + 1));
+      };
+      fr.onerror = function () { reject(fr.error || new Error('读 blob 失败')); };
+      fr.readAsDataURL(blob);
+    });
+  }
+
+  function makeImage() {
+    var cv = document.createElement('canvas');
+    cv.width = 960; cv.height = 600;
+    var ctx = cv.getContext('2d');
+    var g = ctx.createLinearGradient(0, 0, 960, 600);
+    g.addColorStop(0, '#1d4ed8');
+    g.addColorStop(1, '#0891b2');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 960, 600);
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.beginPath();
+    ctx.moveTo(600, 470); ctx.lineTo(880, 470); ctx.lineTo(600, 250); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 62px "Microsoft YaHei", sans-serif';
+    ctx.fillText('a2 + b2 = c2', 70, 150);
+    return cv.toDataURL('image/png');
+  }
+
+  var NOTES = '老师提示：这一页可以用 3 分钟讲完，配合板书推导。';
+
+  function buildDeck() {
+    var img = makeImage();
+    return {
+      title: '集成测试：勾股定理（第 1 课时）',
+      subtitle: '八年级数学 · 人教版下册',
+      meta: { grade: '八年级', subject: '数学', minutes: 45 },
+      slides: [
+        { type: 'cover', title: '勾股定理', subtitle: '从直角三角形到 a² + b² = c²', notes: NOTES },
+        { type: 'section', title: '一、认识直角三角形', subtitle: '边、角与斜边', notes: NOTES },
+        {
+          type: 'bullets', title: '本节课的学习目标',
+          bullets: [
+            '理解直角三角形三边之间的关系',
+            '会用勾股定理求未知边长',
+            '能说出勾股定理的常见应用场景',
+            '完成课堂练习 1—3 题'
+          ],
+          notes: NOTES
+        },
+        {
+          type: 'bullets', title: '八个要点（测字号收缩到 14pt）',
+          bullets: [
+            '要点一：直角三角形有一个角是 90°',
+            '要点二：直角所对的边叫斜边，最长',
+            '要点三：两条直角边分别记作 a 和 b',
+            '要点四：斜边记作 c，满足 a² + b² = c²',
+            '要点五：反过来也成立，可用于判定直角',
+            '要点六：常用勾股数 3-4-5、5-12-13',
+            '要点七：实际问题先画图再找直角三角形',
+            '要点八：注意单位统一与精确度要求'
+          ],
+          notes: NOTES
+        },
+        {
+          type: 'two-col', title: '常用勾股数对比',
+          columns: [
+            { title: '基础勾股数', items: ['3、4、5', '5、12、13', '7、24、25', '8、15、17'] },
+            { title: '常见变形', items: ['6、8、10（×2）', '9、12、15（×3）', '10、24、26（×2）', '15、36、39（×3）'] }
+          ],
+          notes: NOTES
+        },
+        {
+          type: 'image', title: '直角三角形示意图',
+          image: { src: img, caption: '直角边 a、b 与斜边 c 的关系' },
+          notes: NOTES
+        },
+        { type: 'quote', quote: '数学是研究数量关系与空间形式的科学。', author: '恩格斯', notes: NOTES },
+        {
+          type: 'stats', title: '本课关键数字',
+          stats: [
+            { value: '90°', label: '直角' },
+            { value: '3', label: '条边' },
+            { value: '5', label: '组勾股数' }
+          ],
+          notes: NOTES
+        },
+        {
+          type: 'list', title: '课堂小活动',
+          bullets: ['拿出三角板，找出直角', '量出两条直角边并记录', '计算斜边长度并验证', '同桌互相检查结果'],
+          notes: NOTES
+        },
+        { type: 'end', title: '谢谢观看', subtitle: '下节课见', notes: NOTES }
+      ]
+    };
+  }
+
+  /* 统计 html2canvas 产物：尺寸 + dataURL 长度（长度可判断是否空白页） */
+  var h2cStats = [];
+  function watchCanvas() {
+    var proto = HTMLCanvasElement.prototype;
+    var orig = proto.toDataURL;
+    proto.toDataURL = function () {
+      var out = orig.apply(this, arguments);
+      h2cStats.push({ w: this.width, h: this.height, len: out.length, head: out.slice(0, 24) });
+      return out;
+    };
+  }
+
+  step('boot');
+  (async function run() {
+    try {
+      /* ---------- 1. 环境 ---------- */
+      record('真实 PRESETS 已加载', typeof PRESETS === 'object' && typeof PRESETS.get === 'function',
+        'styles=' + (PRESETS.styles || []).length + ', palettes=' + (PRESETS.palettes || []).length);
+      record('真实 PPT 渲染模块已加载', typeof PPT === 'object' &&
+        typeof PPT.renderThumb === 'function' && typeof PPT.renderDeck === 'function',
+        'renderThumb=' + (typeof (PPT && PPT.renderThumb)) + ', renderDeck=' + (typeof (PPT && PPT.renderDeck)));
+      record('EXPORTER 已加载', typeof EXPORTER === 'object' && typeof EXPORTER.toPptx === 'function',
+        'version=' + (EXPORTER && EXPORTER.version));
+
+      /* ---------- 2. 用真实 presets 解析主题 ---------- */
+      var tInk = EXPORTER.resolveTheme({ styleId: 'editorial', paletteId: 'ink', fontId: 'sans-cn', animId: 'fade-up' });
+      record('ink 配色解析自 PRESETS（bg/primary/text）',
+        tInk.colors.bg === 'FFFFFF' && tInk.colors.primary === '2563EB' && tInk.colors.text === '0F172A',
+        'bg=' + tInk.colors.bg + ', primary=' + tInk.colors.primary + ', text=' + tInk.colors.text +
+        ', accent=' + tInk.colors.accent + ', style=' + tInk.styleId);
+      record('rgba 描边色被归一化为 hex', tInk.colors.line === '0F172A', 'line=' + tInk.colors.line);
+      record('sans-cn → Microsoft YaHei', tInk.fontHeading === 'Microsoft YaHei', 'heading=' + tInk.fontHeading);
+
+      var tSerif = EXPORTER.resolveTheme({ styleId: 'warm', paletteId: 'paper', fontId: 'serif-cn', animId: 'fade' });
+      record('serif-cn → SimSun（不复用 CSS 哨兵字体栈）', tSerif.fontHeading === 'SimSun',
+        'heading=' + tSerif.fontHeading + ', body=' + tSerif.fontBody);
+
+      var tKai = EXPORTER.resolveTheme({ styleId: 'warm', paletteId: 'paper', fontId: 'kai-cn', animId: 'fade' });
+      record('kai-cn → KaiTi', tKai.fontHeading === 'KaiTi', 'heading=' + tKai.fontHeading);
+
+      var tOcean = EXPORTER.resolveTheme({ styleId: 'corporate', paletteId: 'ocean', fontId: 'sans-cn', animId: 'none' });
+      record('ocean 深色配色识别为 dark', tOcean.dark === true && tOcean.colors.bg === '0B1220',
+        'bg=' + tOcean.colors.bg + ', dark=' + tOcean.dark + ', onPrimary=' + tOcean.onPrimary);
+
+      /* ---------- 3. native 导出（真实 presets，浅色） ---------- */
+      step('native');
+      var deck = buildDeck();
+      var t0 = performance.now();
+      var light = await EXPORTER.toPptx(deck, { styleId: 'editorial', paletteId: 'ink', fontId: 'sans-cn', animId: 'fade-up' },
+        { mode: 'native' });
+      var msLight = Math.round(performance.now() - t0);
+      record('native 导出返回 {blob, filename}', !!(light && light.blob && light.filename),
+        'filename=' + (light && light.filename) + ', type=' + (light && light.blob && light.blob.type));
+      record('native blob > 50KB', light.blob.size > 50000, 'size=' + light.blob.size + ', ms=' + msLight);
+      record('文件名 = deck.title + .pptx', light.filename === '集成测试：勾股定理（第 1 课时）.pptx',
+        'filename=' + light.filename);
+      record('PPTX MIME 类型', /presentation/.test(light.blob.type || ''), 'type=' + light.blob.type);
+      BLOBS['native'] = await blobToB64(light.blob); STATS['native'] = { size: light.blob.size, mode: 'native', ms: msLight };
+
+      /* ---------- 4. native 导出（深色 corporate/ocean） ---------- */
+      step('native-dark');
+      var dark = await EXPORTER.toPptx(deck, { styleId: 'corporate', paletteId: 'ocean', fontId: 'serif-cn', animId: 'none' },
+        { mode: 'native' });
+      var b64dark = await blobToB64(dark.blob);
+      BLOBS['dark'] = b64dark;
+      STATS['dark'] = { size: dark.blob.size, mode: 'native', ms: 0 };
+      record('深色主题 native 导出成功', dark.blob.size > 50000, 'size=' + dark.blob.size);
+      record('深色与浅色 pptx 内容不同', b64dark !== BLOBS['native'], 'len=' + b64dark.length + ' vs ' + BLOBS['native'].length);
+
+      /* ---------- 5. image 模式（真实 renderThumb + html2canvas） ---------- */
+      step('image');
+      h2cStats.length = 0;
+      watchCanvas();
+      var t1 = performance.now();
+      var imgOut = await EXPORTER.toPptx(deck, { styleId: 'editorial', paletteId: 'ink', fontId: 'sans-cn', animId: 'fade-up' },
+        { mode: 'image' });
+      var msImg = Math.round(performance.now() - t1);
+      record('image 模式导出成功', imgOut.blob.size > 100000, 'size=' + imgOut.blob.size + ', ms=' + msImg);
+      record('image 模式文件名正确', imgOut.filename === light.filename, 'filename=' + imgOut.filename);
+      // 只统计页面尺寸的截图：html2canvas 内部还会建 300x150 的临时画布，忽略
+      var shots = h2cStats.filter(function (s) { return s.w >= 640 && s.h >= 360; });
+      record('每页都截了一整张图（10 张）', shots.length === 10,
+        'pageShots=' + shots.length + ', 全部截图=' + h2cStats.length);
+      var dimsOk = shots.every(function (s) { return s.w === 1920 && s.h === 1080; });
+      record('截图尺寸 1920×1080（scale=1.5）', dimsOk,
+        shots.map(function (s) { return s.w + 'x' + s.h; }).join(' '));
+      // 空白页的 jpeg 极小（<20KB），有内容的课件页都远大于此
+      var blank = shots.filter(function (s) { return s.len < 20000; });
+      record('截图非空白（真实渲染出了内容）', blank.length === 0,
+        '疑似空白=' + blank.length + ', 各页 base64 长度=' + shots.map(function (s) { return Math.round(s.len / 1000) + 'k'; }).join(','));
+      record('导出后没有残留离屏宿主节点',
+        document.querySelectorAll('[data-pp-export]').length === 0,
+        'residue=' + document.querySelectorAll('[data-pp-export]').length);
+      BLOBS['image'] = await blobToB64(imgOut.blob);
+      STATS['image'] = { size: imgOut.blob.size, mode: 'image', ms: msImg, shots: shots.length };
+
+      /* ---------- 6. 收尾 ---------- */
+      step('finish');
+      var failed = RESULTS.filter(function (r) { return !r.ok; }).length;
+      STATE = failed ? 'FAIL' : 'PASS';
+    } catch (e) {
+      STATE = 'ERROR';
+      record('未捕获异常', false, String((e && e.stack) || (e && e.message) || e));
+    }
+
+    var body = document.querySelector('#out tbody');
+    RESULTS.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + esc(r.name) + '</td><td class="' + (r.ok ? 'ok">PASS' : 'bad">FAIL') +
+        '</td><td>' + esc(r.detail) + '</td>';
+      body.appendChild(tr);
+    });
+    var failedN = RESULTS.filter(function (r) { return !r.ok; }).length;
+    document.getElementById('state').textContent = STATE + ' · ' + (RESULTS.length - failedN) + '/' + RESULTS.length;
+    document.getElementById('state').style.color = failedN ? '#ff8080' : '#6ee7a0';
+
+    window.__RESULT = {
+      state: STATE,
+      total: RESULTS.length,
+      failed: failedN,
+      rows: RESULTS,
+      stats: STATS,
+      blobLens: Object.keys(BLOBS).reduce(function (o, k) { o[k] = BLOBS[k].length; return o; }, {})
+    };
+    window.__blobLen = function (k) { return (BLOBS[k] || '').length ? Math.ceil(BLOBS[k].length / 4) * 4 : 0; };
+    window.__chunk = function (k, i, n) {
+      var s = BLOBS[k] || '';
+      var at = i * n;
+      var pad = s.length % 4 ? 4 - (s.length % 4) : 0;
+      if (at + n > s.length) return s.slice(at) + '='.repeat(pad);
+      return s.slice(at, at + n);
+    };
+  })();
+})();
+</script>
+</body>
+</html>

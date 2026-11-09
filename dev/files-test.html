@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>files.js 测试</title>
+<style>
+  body { font: 14px/1.6 -apple-system, "Microsoft YaHei", sans-serif; margin: 24px; background:#111; color:#eee; }
+  h1 { font-size: 18px; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+  .ok { color: #6ee7a0; } .bad { color: #ff8080; }
+  pre { white-space: pre-wrap; word-break: break-all; max-width: 640px; }
+</style>
+</head>
+<body>
+<h1>files.js 解析测试</h1>
+<p id="state">running…</p>
+<table id="out"><thead><tr><th>用例</th><th>结果</th><th>细节</th></tr></thead><tbody></tbody></table>
+
+<script src="../assets/files.js"></script>
+<script src="./fixtures.js"></script>
+<script>
+(function () {
+  'use strict';
+  var ROWS = [];
+  var RESULTS = [];
+  var STATE = 'running';
+
+  function record(name, ok, detail) {
+    ROWS.push({ name: name, ok: !!ok, detail: String(detail == null ? '' : detail) });
+    RESULTS.push({ name: name, ok: !!ok, detail: String(detail == null ? '' : detail) });
+  }
+  function check(name, cond, detail) { record(name, cond, detail); return !!cond; }
+
+  function b64ToBytes(b64) {
+    var bin = atob(b64);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function fixtureFile(name) {
+    var f = window.__FIXTURES[name];
+    if (!f) throw new Error('缺少 fixture: ' + name);
+    return new File([b64ToBytes(f.b64)], name, { type: f.mime });
+  }
+  function textFile(name, text, type) {
+    return new File([new TextEncoder().encode(text)], name, { type: type || 'text/plain' });
+  }
+  function first(entries) { return entries && entries[0]; }
+
+  async function run() {
+    try {
+      check('FILES 已加载', window.FILES && typeof FILES.read === 'function',
+        window.FILES ? 'version=' + FILES.version + ', vendor=' + FILES._vendorBase : 'window.FILES 缺失');
+      check('humanSize 存在', typeof FILES.humanSize === 'function', '');
+
+      /* ---------- humanSize ---------- */
+      var hs = [
+        [0, '0 B'], [512, '512 B'], [1024, '1 KB'], [1536, '1.5 KB'],
+        [1048576, '1 MB'], [5 * 1024 * 1024, '5 MB'], [1024 * 1024 * 1024, '1 GB']
+      ];
+      var hsBad = [];
+      hs.forEach(function (p) {
+        var got = FILES.humanSize(p[0]);
+        if (got !== p[1]) hsBad.push(p[0] + '->' + got + '(期望 ' + p[1] + ')');
+      });
+      check('humanSize 换算', hsBad.length === 0, hsBad.join('; ') || hs.length + ' 组全部正确');
+
+      /* ---------- 纯文本族 ---------- */
+      var LONG = new Array(2601).join('中文测试abc '); // 约 26000 字符
+      var textCases = [
+        ['笔记.txt', '# 标题\n这是纯文本文件。\n第二行。', 'text/plain'],
+        ['notes.md', '# 勾股定理\n\n- 直角三角形\n- a²+b²=c²', 'text/markdown'],
+        ['data.csv', 'name,score\n张三,90\n李四,85', 'text/csv'],
+        ['conf.json', '{"a":1,"b":[2,3]}', 'application/json'],
+        ['page.html', '<h1>标题</h1><p>正文段落</p>', 'text/html']
+      ];
+      var files = textCases.map(function (c) { return textFile(c[0], c[1], c[2]); });
+      var ents = await FILES.read(files);
+      check('文本族返回条数', ents.length === textCases.length, ents.length + ' 条');
+      for (var i = 0; i < textCases.length; i++) {
+        var e = ents[i], want = textCases[i];
+        var ok = e && e.kind === 'text' && typeof e.text === 'string'
+          && e.text.indexOf(want[1].slice(0, 8)) >= 0;
+        check('文本解析 ' + want[0], ok,
+          e ? 'kind=' + e.kind + ', text=' + JSON.stringify((e.text || '').slice(0, 60)) : '缺失');
+      }
+
+      /* ---------- 文本截断 200k ---------- */
+      var big = textFile('big.txt', new Array(300001).join('A')); // 300000 字符
+      var bigE = first(await FILES.read([big]));
+      check('文本截断到 200000', bigE && bigE.text.length === 200000 && bigE.truncated === true,
+        bigE ? 'len=' + bigE.text.length + ', truncated=' + bigE.truncated : '缺失');
+
+      /* ---------- 图片 ---------- */
+      var imgE = first(await FILES.read([fixtureFile('wide.png')]));
+      var thumbOk = false, w = 0;
+      if (imgE && imgE.thumb) {
+        w = await new Promise(function (res) {
+          var im = new Image();
+          im.onload = function () { res(im.naturalWidth); };
+          im.onerror = function () { res(-1); };
+          im.src = imgE.thumb;
+        });
+        thumbOk = w > 0 && w <= 480;
+      }
+      check('宽图 2000×900 压到 1600', imgE && imgE.width === 2000 && imgE.compressed === true
+        && /^data:image\/jpeg/.test(imgE.dataUrl) && imgE.thumbWidth <= 480,
+        imgE ? 'kind=' + imgE.kind + ', 原图 ' + imgE.width + '×' + imgE.height
+          + ', compressed=' + imgE.compressed + ', dataUrl=' + String(imgE.dataUrl).slice(0, 22)
+          + ', thumbWidth=' + imgE.thumbWidth : '缺失');
+      check('缩略图可解码且宽度≤480', thumbOk, 'thumb 实际宽=' + w);
+
+      var tinyE = first(await FILES.read([fixtureFile('tiny.png')]));
+      check('小图 120×80 不重压', tinyE && tinyE.width === 120 && !tinyE.compressed
+        && /^data:image\/png/.test(tinyE.dataUrl),
+        tinyE ? tinyE.width + '×' + tinyE.height + ', compressed=' + !!tinyE.compressed : '缺失');
+
+      /* ---------- docx ---------- */
+      var docxE = first(await FILES.read([fixtureFile('sample.docx')]));
+      check('docx 解析', docxE && docxE.kind === 'docx' && (docxE.text || '').length > 50,
+        docxE ? 'kind=' + docxE.kind + ', parser=' + docxE.parser + ', len=' + (docxE.text || '').length
+          + ', head=' + JSON.stringify((docxE.text || '').slice(0, 50)) : '缺失');
+
+      /* ---------- pptx ---------- */
+      var pptxE = first(await FILES.read([fixtureFile('unit1.pptx')]));
+      check('pptx 解析', pptxE && pptxE.kind === 'pptx' && pptxE.slides === 3
+        && (pptxE.text || '').indexOf('【第 1 页】') >= 0,
+        pptxE ? 'kind=' + pptxE.kind + ', slides=' + pptxE.slides + ', len=' + (pptxE.text || '').length
+          + ', head=' + JSON.stringify((pptxE.text || '').slice(0, 70)) : '缺失');
+
+      /* ---------- pdf ---------- */
+      var pdfE = first(await FILES.read([fixtureFile('lesson.pdf')]));
+      check('pdf 解析', pdfE && pdfE.kind === 'pdf' && pdfE.pages === 2
+        && (pdfE.text || '').indexOf('【第 1 页】') >= 0,
+        pdfE ? 'kind=' + pdfE.kind + ', pages=' + pdfE.pages + ', len=' + (pdfE.text || '').length
+          + ', head=' + JSON.stringify((pdfE.text || '').slice(0, 80)) : '缺失');
+
+      /* ---------- 视频 / 音频 / 其它 / 大文件 ---------- */
+      var vidE = first(await FILES.read([new File([new Uint8Array(2048)], 'clip.mp4', { type: 'video/mp4' })]));
+      check('视频不崩（坏视频→无缩略图）', vidE && vidE.kind === 'video' && !vidE.dataUrl,
+        vidE ? 'kind=' + vidE.kind + ', thumb=' + (vidE.thumb ? 'yes' : 'null') + ', error=' + (vidE.error || '') : '缺失');
+
+      // 真实视频：<video> 抓首帧 → jpeg 缩略图，且绝不保存整个视频文件
+      var realMp4 = first(await FILES.read([fixtureFile('clip.mp4')]));
+      check('真实 mp4 抓到首帧缩略图', realMp4 && realMp4.kind === 'video' && !!realMp4.thumb
+        && /^data:image\/(jpeg|png)/.test(realMp4.thumb) && realMp4.thumb.length > 800,
+        realMp4 ? 'kind=' + realMp4.kind + ', thumbLen=' + String(realMp4.thumb || '').length : '缺失');
+      check('视频不保存整个文件（无 dataUrl）', realMp4 && !realMp4.dataUrl,
+        realMp4 ? 'dataUrl=' + (realMp4.dataUrl ? 'yes' : 'none') + ', size=' + realMp4.size : '缺失');
+
+      var realWebm = first(await FILES.read([fixtureFile('clip.webm')]));
+      check('真实 webm 抓到首帧缩略图', realWebm && realWebm.kind === 'video' && !!realWebm.thumb,
+        realWebm ? 'kind=' + realWebm.kind + ', thumbLen=' + String(realWebm.thumb || '').length : '缺失');
+
+      var vidThumbW = await new Promise(function (res) {
+        if (!realMp4 || !realMp4.thumb) return res(-1);
+        var im = new Image();
+        im.onload = function () { res(im.naturalWidth); };
+        im.onerror = function () { res(-1); };
+        im.src = realMp4.thumb;
+      });
+      check('视频缩略图可解码且宽度 ≤ 480', vidThumbW > 0 && vidThumbW <= 480, 'thumb 宽=' + vidThumbW);
+
+      var audE = first(await FILES.read([fixtureFile('tone.mp3')]));
+      check('音频 kind=audio 且不解析', audE && audE.kind === 'audio' && !audE.text && !audE.dataUrl,
+        audE ? 'kind=' + audE.kind + ', mime=' + audE.mime + ', size=' + audE.size : '缺失');
+
+      var zipE = first(await FILES.read([new File([new Uint8Array(64)], 'pack.zip', { type: 'application/zip' })]));
+      check('未知类型 kind=other', zipE && zipE.kind === 'other', zipE ? 'kind=' + zipE.kind : '缺失');
+
+      var bigVid = { name: 'huge.mp4', size: 60 * 1024 * 1024, type: 'video/mp4' };
+      var bigVidE = first(await FILES.read([bigVid]));
+      check('>50MB 视频只记元信息', bigVidE && bigVidE.kind === 'video' && bigVidE.oversized === true
+        && !bigVidE.thumb, bigVidE ? 'oversized=' + bigVidE.oversized + ', error=' + bigVidE.error : '缺失');
+
+      var bigPdf = { name: 'huge.pdf', size: 80 * 1024 * 1024, type: 'application/pdf' };
+      var bigPdfE = first(await FILES.read([bigPdf]));
+      check('>50MB 文档不解析', bigPdfE && bigPdfE.oversized === true && !bigPdfE.text,
+        bigPdfE ? 'kind=' + bigPdfE.kind + ', oversized=' + bigPdfE.oversized + ', error=' + bigPdfE.error : '缺失');
+
+      /* ---------- 失败降级 ---------- */
+      var brokenDocx = new File([new TextEncoder().encode('not a zip at all')], 'broken.docx',
+        { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      var brokenE = first(await FILES.read([brokenDocx]));
+      check('坏 docx → kind=other 不抛异常', brokenE && brokenE.kind === 'other' && !!brokenE.error,
+        brokenE ? 'kind=' + brokenE.kind + ', originalKind=' + brokenE.originalKind + ', error=' + brokenE.error : '缺失');
+
+      /* ---------- 入口形态 & 组合工具 ---------- */
+      var mix = await FILES.read([textFile('a.txt', 'hello'), fixtureFile('tiny.png')]);
+      check('FILES.read(数组) 混合类型', mix.length === 2 && mix[0].kind === 'text' && mix[1].kind === 'image',
+        mix.map(function (m) { return m.kind; }).join(','));
+
+      var single = first(await FILES.read(textFile('one.txt', 'single file')));
+      check('FILES.read(单 File)', single && single.kind === 'text' && single.text === 'single file',
+        single ? 'kind=' + single.kind : '缺失');
+
+      var empty = await FILES.read(null);
+      check('FILES.read(null) 返回空数组', Array.isArray(empty) && empty.length === 0, 'len=' + (empty || []).length);
+
+      var prompt = FILES.toPromptText(mix.concat(docxE ? [docxE] : []), { maxChars: 5000 });
+      check('toPromptText 拼装', typeof prompt === 'string' && prompt.indexOf('### 文件：a.txt') >= 0
+        && prompt.length <= 5100, 'len=' + prompt.length + ', head=' + JSON.stringify(prompt.slice(0, 60)));
+
+      check('路径 vendor 目录存在', /\/vendor\/$/.test(String(FILES._vendorBase)), FILES._vendorBase);
+    } catch (err) {
+      record('未捕获异常：' + (err && err.message), false, (err && err.stack) || String(err));
+    }
+
+    var failed = RESULTS.filter(function (r) { return !r.ok; }).length;
+    STATE = failed ? 'FAIL' : 'PASS';
+    window.__RESULT = { state: STATE, total: RESULTS.length, failed: failed, rows: RESULTS };
+    document.getElementById('state').textContent = STATE + ' — ' + (RESULTS.length - failed) + '/' + RESULTS.length + ' 通过';
+    document.getElementById('state').className = failed ? 'bad' : 'ok';
+    var tb = document.querySelector('#out tbody');
+    ROWS.forEach(function (r) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + esc(r.name) + '</td><td class="' + (r.ok ? 'ok' : 'bad') + '">'
+        + (r.ok ? 'PASS' : 'FAIL') + '</td><td><pre>' + esc(r.detail) + '</pre></td>';
+      tb.appendChild(tr);
+    });
+    return window.__RESULT;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; });
+  }
+
+  window.__run = run;
+  window.__result = function () { return window.__RESULT || { state: STATE }; };
+
+  window.addEventListener('load', function () {
+    var t = setTimeout(function () {
+      if (STATE === 'running') {
+        STATE = 'TIMEOUT';
+        window.__RESULT = { state: 'TIMEOUT', total: ROWS.length, failed: ROWS.length, rows: RESULTS };
+      }
+    }, 120000);
+    run()['then'](function () { clearTimeout(t); }, function () { clearTimeout(t); });
+  });
+})();
+</script>
+</body>
+</html>
