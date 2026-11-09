@@ -62,7 +62,8 @@
       apiKey: '',
       model: 'deepseek-chat',
       searchProxy: '',
-      rememberKey: true
+      rememberKey: true,
+      stepReveal: true
     },
     messages: [],
     attachments: [],
@@ -170,6 +171,7 @@
     $('#set-model').value = state.settings.model || '';
     $('#set-proxy').value = state.settings.searchProxy || '';
     if ($('#set-remember')) $('#set-remember').checked = state.settings.rememberKey !== false;
+    if ($('#set-reveal')) $('#set-reveal').checked = state.settings.stepReveal !== false;
     $('#test-status').textContent = '';
     $('#test-status').className = 'dlg-status';
     $('#dlg-settings').showModal();
@@ -181,6 +183,7 @@
     state.settings.model = ($('#set-model').value || '').trim() || 'deepseek-chat';
     state.settings.searchProxy = ($('#set-proxy').value || '').trim();
     state.settings.rememberKey = $('#set-remember') ? !!$('#set-remember').checked : true;
+    state.settings.stepReveal = $('#set-reveal') ? !!$('#set-reveal').checked : true;
     if (window.SEARCH && SEARCH.setCustomProxy) SEARCH.setCustomProxy(state.settings.searchProxy);
     save();
     renderModelChip();
@@ -403,7 +406,8 @@
         ? '7) 用户已上传图片素材：需要插图的页面用 image 类型，caption 写图注，图片会由素材填充；不要在 JSON 里放图片链接。'
         : '7) 用户没有上传图片：不要放图片链接（放了也不会加载）。确实需要图才能讲清的地方，可以插入 1–3 页 image 页型：title 写这页讲什么，subtitle 写「建议配图：……」（说明画什么），caption 写图注；不要连续两页都是 image。',
       '8) 每个知识点要能自洽：标题是结论或问题，要点里给出依据、例子或步骤；不要只堆名词。',
-      '9) 面向小学生的课件，每个 section 至少安排 1 个互动（提问 / 跟读 / 小游戏 / 动手做）。'
+      '9) 面向小学生的课件，每个 section 至少安排 1 个互动（提问 / 跟读 / 小游戏 / 动手做）。',
+      '10) 可选字段 homework：给 2–4 页（优先知识点页与小结页）写一句「课后思考」，让学生带着问题回家想，一句话、不超过 30 字；其余页面不要写这个字段。'
     ].join('\n');
   }
 
@@ -467,16 +471,18 @@
         // 只接受本地素材 / data:image / blob: / https，防止模型塞进奇怪协议的地址
         var rawSrc = String(s.image.src || '');
         var okSrc = /^(data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,|blob:|https?:\/\/|assets\/|\.\.?\/)/i.test(rawSrc) ? rawSrc : '';
-        out.image = { caption: String(s.image.caption || '').trim(), src: okSrc };
+        out.image = { caption: String(s.image.caption || '').trim(), src: okSrc, kind: String(s.image.kind || 'image') };
       }
       if (s.quote) out.quote = String(s.quote).trim();
       if (s.author) out.author = String(s.author).trim();
       if (s.image && (s.image.src || s.image.caption)) {
         out.image = {
           src: String(s.image.src || '').trim(),
-          caption: String(s.image.caption || '').trim()
+          caption: String(s.image.caption || '').trim(),
+          kind: String(s.image.kind || 'image')
         };
       }
+      if (s.homework) out.homework = String(s.homework).trim();
       if (Array.isArray(s.stats)) out.stats = s.stats.slice(0, 4).map(x => ({ value: String((x && x.value) || ''), label: String((x && x.label) || '') }));
       // 兜底：没有图片素材却给了 image 页型 → 降级成 section（避免空白占位框）
       if (out.type === 'image' && !(out.image && out.image.src) && !hasImageMaterials()
@@ -653,13 +659,18 @@
         '  </div>' +
         '  <input class="sub" data-f="subtitle" placeholder="副标题 / 配图建议（如：建议配图：光从空气斜射入水中）" value="' + esc(s.subtitle || '') + '">' +
         '  <textarea data-f="bullets" placeholder="要点，一行一条；一条里可以用「；」接一句解释">' + esc((s.bullets || []).join('\n')) + '</textarea>' +
+        '  <input class="hw-in" data-f="homework" placeholder="课后思考（可选）：留一句给学生的思考题，留空则这一页不显示" value="' + esc(s.homework || '') + '">' +
         '  <div class="img-slot' + (hasImg ? ' has' : '') + '">' +
-        '    <span class="img-label">配图</span>' +
+        '    <span class="img-label">' + (img.kind === 'video' ? '视频' : img.kind === 'audio' ? '音频' : '配图') + '</span>' +
         '    <button class="mini-btn" type="button" data-a="pick-img">选图</button>' +
-        '    <input class="img-url" data-f="imageUrl" placeholder="图片链接或 dataURL（可空）" value="' + esc(img.src || '') + '">' +
+        '    <button class="mini-btn" type="button" data-a="pick-video">视频</button>' +
+        '    <button class="mini-btn" type="button" data-a="pick-audio">音频</button>' +
+        '    <input class="img-url" data-f="imageUrl" placeholder="素材链接或 dataURL（可空）" value="' + esc(img.src || '') + '">' +
         '    <input class="img-cap" data-f="caption" placeholder="图注（显示在图片下方）" value="' + esc(img.caption || '') + '">' +
         (hasImg ? '<button class="icon-btn danger" type="button" data-a="clear-img" title="清除图片">✕</button>' : '') +
-        '    <input type="file" accept="image/*" hidden>' +
+        '    <input type="file" accept="image/*" hidden data-media="image">' +
+        '    <input type="file" accept="video/*" hidden data-media="video">' +
+        '    <input type="file" accept="audio/*" hidden data-media="audio">' +
         '  </div>' +
         '  <input class="notes-in" data-f="notes" placeholder="讲稿备注：怎么讲、问什么、提醒什么易错点" value="' + esc(s.notes || '') + '">' +
         '</div>' +
@@ -678,6 +689,10 @@
           else if (f === 'subtitle') s.subtitle = inp.value;
           else if (f === 'bullets') s.bullets = inp.value.split('\n').map(x => x.trim()).filter(Boolean);
           else if (f === 'notes') s.notes = inp.value;
+          else if (f === 'homework') {
+            const hv = inp.value.trim();
+            if (hv) s.homework = hv; else delete s.homework;
+          }
           else if (f === 'imageUrl' || f === 'caption') {
             const next = Object.assign({}, s.image || {});
             if (f === 'imageUrl') next.src = inp.value.trim();
@@ -697,14 +712,37 @@
             if (deck.slides.length <= 2) { toast('至少保留 2 页'); return; }
             deck.slides.splice(idx, 1);
           }
+          if (a === 'pick-video' || a === 'pick-audio') {
+            const kind = a === 'pick-video' ? 'video' : 'audio';
+            const input = card.querySelector('input[type=file][data-media="' + kind + '"]');
+            input.onchange = () => {
+              const f2 = input.files && input.files[0];
+              if (!f2) return;
+              const limitMb = kind === 'video' ? 6 : 8;
+              if (f2.size > limitMb * 1024 * 1024) {
+                toast((kind === 'video' ? '视频' : '音频') + '超过 ' + limitMb + 'MB，先压缩一下，或用上面的链接方式引用', 'err');
+                return;
+              }
+              const reader = new FileReader();
+              reader.onload = () => {
+                s.image = Object.assign({}, s.image || {}, { kind: kind, src: String(reader.result) });
+                s.type = 'image';
+                save(); renderOutline(); renderPreview();
+                toast((kind === 'video' ? '视频' : '音频') + '已插入这一页');
+              };
+              reader.readAsDataURL(f2);
+            };
+            input.click();
+            return;
+          }
           if (a === 'pick-img') {
-            const file = card.querySelector('input[type=file]');
+            const file = card.querySelector('input[type=file][data-media="image"]');
             file.onchange = () => {
               const f2 = file.files && file.files[0];
               if (!f2) return;
               readImageDataUrl(f2).then(dataUrl => {
                 if (!dataUrl) { toast('这张图读不出来，换一张试试', 'err'); return; }
-                s.image = Object.assign({}, s.image || {}, { src: dataUrl });
+                s.image = Object.assign({}, s.image || {}, { kind: 'image', src: dataUrl });
                 save(); renderOutline(); renderPreview();
                 toast('图片已插入这一页');
               });
@@ -825,6 +863,15 @@
     return Object.keys(out).length ? out : null;
   }
 
+  function effectiveTheme(slide) {
+    const t = Object.assign({}, state.theme || {});
+    const own = slide && slide.theme;
+    if (own) {
+      Object.keys(own).forEach(k => { if (own[k]) t[k] = own[k]; });
+    }
+    return t;
+  }
+
   function setSlideThemeField(slide, key, val) {
     if (!val) {
       if (slide.theme) { delete slide.theme[key]; }
@@ -895,6 +942,27 @@
         ctrls.appendChild(wrap);
       });
 
+      const quick = document.createElement('div');
+      quick.className = 'pp-quick';
+      quick.innerHTML = '<button class="mini-btn" type="button" data-a="apply-all" title="把这一页的风格/配色/字体/动画设为全局，全部页面统一">应用到全部</button>' +
+        (slideThemeClean(s) ? '<button class="mini-btn" type="button" data-a="reset-one" title="取消这一页的单独设置">取消定制</button>' : '');
+      quick.querySelector('[data-a="apply-all"]').addEventListener('click', () => {
+        state.theme = Object.assign({}, state.theme, effectiveTheme(s));
+        deck.slides.forEach(x => { delete x.theme; });
+        save();
+        renderPerPage();
+        try { renderPreview(); } catch (e) { /* ignore */ }
+        toast('已把第 ' + (i + 1) + ' 页的效果应用到全部页面');
+      });
+      const resetBtn = quick.querySelector('[data-a="reset-one"]');
+      if (resetBtn) resetBtn.addEventListener('click', () => {
+        delete s.theme;
+        save();
+        renderPerPage();
+        toast('已恢复这一页跟随全局');
+      });
+      meta.appendChild(quick);
+
       row.appendChild(thumb);
       row.appendChild(meta);
       row.appendChild(ctrls);
@@ -959,7 +1027,7 @@
   function present(start) {
     if (!window.PPT || !PPT.present) { toast('放映模块未加载', 'err'); return; }
     try {
-      PPT.present(state.deck, state.theme, start || 0);
+      PPT.present(state.deck, state.theme, start || 0, { reveal: state.settings.stepReveal !== false });
     } catch (e) { toast('放映失败：' + e.message, 'err'); }
   }
 
