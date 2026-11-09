@@ -399,3 +399,6 @@ h1,h2,h3,h4,p{margin:0}
   .topbar-right{gap:8px}
   #model-chip{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
+/* ===== 安全选项：勾选行 ===== */
+.chk-line{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.chk-line input{width:15px;height:15px;accent-color:var(--brand);cursor:pointer}
