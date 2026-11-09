@@ -10,9 +10,10 @@
   place-items: center;
   overflow: hidden;
   background:
-    radial-gradient(1200px 700px at 50% 18%, #2a2a63 0%, rgba(20, 22, 52, 0) 62%),
-    radial-gradient(900px 600px at 82% 84%, #1f3b57 0%, rgba(12, 16, 38, 0) 60%),
-    linear-gradient(160deg, #0d1030 0%, #141536 45%, #0b0f26 100%);
+    radial-gradient(760px 460px at 50% 54%, rgba(4, 7, 18, .66) 0%, rgba(4, 7, 18, .22) 62%, rgba(4, 7, 18, 0) 100%),
+    linear-gradient(180deg, rgba(4, 7, 18, .66) 0%, rgba(4, 7, 18, .50) 34%, rgba(4, 7, 18, .80) 100%),
+    url("img/welcome-bg.jpg") center 16% / cover no-repeat,
+    #0b0f26;
   opacity: 1;
   transition: opacity .55s ease, transform .55s cubic-bezier(.4, 0, .2, 1);
 }
@@ -232,3 +233,9 @@
 @media (prefers-reduced-motion: reduce) {
   #welcome, #welcome * { animation-duration: .001s !important; animation-delay: 0s !important; transition-duration: .12s !important; }
 }
+
+/* 背景换成照片后：星点弱化，保证标题与 logo 可读 */
+#welcome .wl-stars,
+#welcome .wl-stars::after { opacity: .18; }
+#welcome .wl-card { background: rgba(255, 255, 255, .10); border-color: rgba(255, 255, 255, .22); }
+#welcome .wl-logo { box-shadow: 0 24px 60px rgba(0, 0, 0, .45), 0 0 0 6px rgba(255, 255, 255, .12); }
