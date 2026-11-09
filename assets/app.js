@@ -156,7 +156,7 @@
   }
 
   function showPanel(name) {
-    ['empty', 'outline', 'style', 'deck'].forEach(k => {
+    ['empty', 'outline', 'style', 'perpage', 'deck'].forEach(k => {
       const el = $('#panel-' + k) || (k === 'empty' ? $('#stage-empty') : null);
       if (!el) return;
       el.hidden = k !== name;
@@ -377,15 +377,17 @@
       '输出必须是**严格合法的 JSON**，不要 Markdown 代码块、不要注释、不要多余文字。JSON 结构如下：',
       DECK_SCHEMA,
       '硬性要求：',
-      '1) 整套 9–14 页；第一页 type 必须是 "cover"，最后一页必须是 "end"。',
-      '2) 结构建议：cover → section（单元导入）→ 若干知识点页（bullets/two-col/stats/list/image 混用）→ 练习/活动页 → 小结 section → end。',
-      '3) bullets 每页 3–6 条，每条不超过 26 个汉字；two-col 的 columns 恰好 2 项、每项 items 2–5 条。',
+      '1) 整套 12–18 页；第一页 type 必须是 "cover"，最后一页必须是 "end"。',
+      '2) 结构建议：cover → section（单元导入）→ 每个 section 之后 2–4 页支撑内容（知识点用 bullets/two-col/stats/list 混用，重要概念再补一页「为什么 / 怎么理解」的解释页或例题页）→ 练习/活动页 → 小结 section → end。',
+      '3) bullets 每页 3–6 条；每条先给一句结论（≤22 字），需要时用「；」接一句解释或例子（整条 ≤44 字）；two-col 的 columns 恰好 2 项、每项 items 2–5 条。',
       '4) 面向小学生的内容要用词简单、可互动（提问、跟读、游戏）；面向初高中要有知识密度和例题。',
-      '5) notes 必须写，给老师的口播提示。',
+      '5) notes 必须写，40–80 字，写清怎么讲：先问什么、举什么例子、提醒什么易错点。',
       '6) 所有文本用简体中文（英语课可以有英文例句，但标题用中文）。',
       hasImageMaterials()
-        ? '7) 用户已上传图片素材：需要插图的页面用 image 类型并写 caption，图片会由素材填充；不要在 JSON 里放图片链接。'
-        : '7) 用户**没有上传任何图片**：禁止使用 "image" 页型（会出现空白占位框）。需要版式变化时改用 stats / quote / two-col / list / section；不要在 JSON 里放图片链接。'
+        ? '7) 用户已上传图片素材：需要插图的页面用 image 类型，caption 写图注，图片会由素材填充；不要在 JSON 里放图片链接。'
+        : '7) 用户没有上传图片：不要放图片链接（放了也不会加载）。确实需要图才能讲清的地方，可以插入 1–3 页 image 页型：title 写这页讲什么，subtitle 写「建议配图：……」（说明画什么），caption 写图注；不要连续两页都是 image。',
+      '8) 每个知识点要能自洽：标题是结论或问题，要点里给出依据、例子或步骤；不要只堆名词。',
+      '9) 面向小学生的课件，每个 section 至少安排 1 个互动（提问 / 跟读 / 小游戏 / 动手做）。'
     ].join('\n');
   }
 
@@ -453,9 +455,16 @@
       }
       if (s.quote) out.quote = String(s.quote).trim();
       if (s.author) out.author = String(s.author).trim();
+      if (s.image && (s.image.src || s.image.caption)) {
+        out.image = {
+          src: String(s.image.src || '').trim(),
+          caption: String(s.image.caption || '').trim()
+        };
+      }
       if (Array.isArray(s.stats)) out.stats = s.stats.slice(0, 4).map(x => ({ value: String((x && x.value) || ''), label: String((x && x.label) || '') }));
       // 兜底：没有图片素材却给了 image 页型 → 降级成 section（避免空白占位框）
-      if (out.type === 'image' && !(out.image && out.image.src) && !hasImageMaterials()) {
+      if (out.type === 'image' && !(out.image && out.image.src) && !hasImageMaterials()
+          && !out.subtitle && !(out.image && out.image.caption)) {
         out.type = (out.bullets && out.bullets.length) ? 'bullets' : 'section';
       }
       return out;
@@ -614,6 +623,8 @@
     const box = $('#outline-list');
     box.innerHTML = '';
     deck.slides.forEach((s, i) => {
+      const img = s.image || {};
+      const hasImg = !!(img.src || img.caption);
       const card = document.createElement('div');
       card.className = 'slide-card';
       card.innerHTML =
@@ -624,9 +635,17 @@
           .map(t => '<option value="' + t + '"' + (t === s.type ? ' selected' : '') + '>' + t + '</option>').join('') + '</select>' +
         '    <input class="title" data-f="title" value="' + esc(s.title) + '">' +
         '  </div>' +
-        '  <input class="sub" data-f="subtitle" placeholder="副标题（可空）" value="' + esc(s.subtitle || '') + '">' +
-        '  <textarea data-f="bullets" placeholder="要点，一行一条">' + esc((s.bullets || []).join('\n')) + '</textarea>' +
-        (s.notes ? '<div class="muted" style="font-size:12px">讲稿：' + esc(s.notes) + '</div>' : '') +
+        '  <input class="sub" data-f="subtitle" placeholder="副标题 / 配图建议（如：建议配图：光从空气斜射入水中）" value="' + esc(s.subtitle || '') + '">' +
+        '  <textarea data-f="bullets" placeholder="要点，一行一条；一条里可以用「；」接一句解释">' + esc((s.bullets || []).join('\n')) + '</textarea>' +
+        '  <div class="img-slot' + (hasImg ? ' has' : '') + '">' +
+        '    <span class="img-label">配图</span>' +
+        '    <button class="mini-btn" type="button" data-a="pick-img">选图</button>' +
+        '    <input class="img-url" data-f="imageUrl" placeholder="图片链接或 dataURL（可空）" value="' + esc(img.src || '') + '">' +
+        '    <input class="img-cap" data-f="caption" placeholder="图注（显示在图片下方）" value="' + esc(img.caption || '') + '">' +
+        (hasImg ? '<button class="icon-btn danger" type="button" data-a="clear-img" title="清除图片">✕</button>' : '') +
+        '    <input type="file" accept="image/*" hidden>' +
+        '  </div>' +
+        '  <input class="notes-in" data-f="notes" placeholder="讲稿备注：怎么讲、问什么、提醒什么易错点" value="' + esc(s.notes || '') + '">' +
         '</div>' +
         '<div class="tools">' +
         '  <button class="icon-btn" data-a="up" title="上移">↑</button>' +
@@ -642,6 +661,13 @@
           else if (f === 'title') s.title = inp.value;
           else if (f === 'subtitle') s.subtitle = inp.value;
           else if (f === 'bullets') s.bullets = inp.value.split('\n').map(x => x.trim()).filter(Boolean);
+          else if (f === 'notes') s.notes = inp.value;
+          else if (f === 'imageUrl' || f === 'caption') {
+            const next = Object.assign({}, s.image || {});
+            if (f === 'imageUrl') next.src = inp.value.trim();
+            else next.caption = inp.value.trim();
+            if (next.src || next.caption) s.image = next; else delete s.image;
+          }
           save();
           renderPreview();
         });
@@ -655,12 +681,58 @@
             if (deck.slides.length <= 2) { toast('至少保留 2 页'); return; }
             deck.slides.splice(idx, 1);
           }
+          if (a === 'pick-img') {
+            const file = card.querySelector('input[type=file]');
+            file.onchange = () => {
+              const f2 = file.files && file.files[0];
+              if (!f2) return;
+              readImageDataUrl(f2).then(dataUrl => {
+                if (!dataUrl) { toast('这张图读不出来，换一张试试', 'err'); return; }
+                s.image = Object.assign({}, s.image || {}, { src: dataUrl });
+                save(); renderOutline(); renderPreview();
+                toast('图片已插入这一页');
+              });
+            };
+            file.click();
+            return;
+          }
+          if (a === 'clear-img') {
+            delete s.image;
+            save(); renderOutline(); renderPreview();
+            return;
+          }
           save(); renderOutline(); renderPreview();
         });
       });
       box.appendChild(card);
     });
     $('#outline-count').textContent = '共 ' + deck.slides.length + ' 页 · 改动会自动保存';
+  }
+
+
+  /* 图片读入并压缩成 dataURL（超出 localStorage 体积控制） */
+  function readImageDataUrl(file, maxSide) {
+    return new Promise(resolve => {
+      if (!file || !/^image\//.test(file.type)) { resolve(''); return; }
+      if (file.size > 12 * 1024 * 1024) { toast('图片太大（>12MB），先压缩一下', 'err'); resolve(''); return; }
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const max = maxSide || 1400;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(cv.toDataURL('image/jpeg', 0.82));
+        } catch (e) { resolve(''); }
+        finally { URL.revokeObjectURL(url); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(''); };
+      img.src = url;
+    });
   }
 
   /* ---------------- 风格选择 ---------------- */
@@ -721,6 +793,100 @@
   }
 
   /* ---------------- 成品 ---------------- */
+  /* ---------------- 第 4 步：逐页定制 ---------------- */
+  const SLIDE_FIELDS = [
+    { key: 'styleId',  label: '风格', list: 'styles'  },
+    { key: 'paletteId', label: '配色', list: 'palettes' },
+    { key: 'fontId',   label: '字体', list: 'fonts'   },
+    { key: 'animId',   label: '动画', list: 'anims'   }
+  ];
+
+  function slideThemeClean(slide) {
+    const t = slide && slide.theme;
+    if (!t) return null;
+    const out = {};
+    SLIDE_FIELDS.forEach(f => { if (t[f.key]) out[f.key] = t[f.key]; });
+    return Object.keys(out).length ? out : null;
+  }
+
+  function setSlideThemeField(slide, key, val) {
+    if (!val) {
+      if (slide.theme) { delete slide.theme[key]; }
+    } else {
+      slide.theme = slide.theme || {};
+      slide.theme[key] = val;
+    }
+    const clean = slideThemeClean(slide);
+    if (clean) slide.theme = clean; else delete slide.theme;
+  }
+
+  function perPageCount() {
+    if (!state.deck) return 0;
+    return state.deck.slides.filter(s => !!slideThemeClean(s)).length;
+  }
+
+  function renderPerPage() {
+    const deck = state.deck;
+    const list = $('#perpage-list');
+    if (!deck || !list) return;
+    const info = $('#perpage-info');
+    const n = perPageCount();
+    if (info) info.textContent = '共 ' + deck.slides.length + ' 页 · ' + (n ? n + ' 页已单独定制' : '全部跟随全局');
+    list.innerHTML = '';
+
+    deck.slides.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'pp-row' + (slideThemeClean(s) ? ' is-custom' : '');
+
+      const thumb = document.createElement('div');
+      thumb.className = 'pp-thumb';
+      thumb.title = '点击放大预览';
+      thumb.addEventListener('click', () => openLightbox(i));
+
+      const meta = document.createElement('div');
+      meta.className = 'pp-meta';
+      meta.innerHTML = '<b>' + (i + 1) + '. ' + esc(s.title || '未命名') + '</b>' +
+        '<span>' + esc(s.type || 'bullets') + '</span>' +
+        (slideThemeClean(s) ? '<em class="pp-tag">已定制</em>' : '');
+
+      const ctrls = document.createElement('div');
+      ctrls.className = 'pp-ctrls';
+      SLIDE_FIELDS.forEach(f => {
+        const wrap = document.createElement('label');
+        wrap.className = 'pp-ctrl';
+        const cur = (s.theme && s.theme[f.key]) || '';
+        const globalItem = window.PRESETS.get(state.theme)[f.list === 'palettes' ? 'palette' : f.list === 'styles' ? 'style' : f.list === 'fonts' ? 'font' : 'anim'];
+        let opts = '<option value="">跟随全局（' + esc(globalItem ? globalItem.name : '默认') + '）</option>';
+        (PRESETS[f.list] || []).forEach(item => {
+          opts += '<option value="' + esc(item.id) + '"' + (cur === item.id ? ' selected' : '') + '>' + esc(item.name) + '</option>';
+        });
+        wrap.innerHTML = '<span>' + f.label + '</span><select data-field="' + f.key + '">' + opts + '</select>';
+        const sel = wrap.querySelector('select');
+        sel.addEventListener('change', () => {
+          setSlideThemeField(s, f.key, sel.value);
+          save();
+          row.classList.toggle('is-custom', !!slideThemeClean(s));
+          const tag = row.querySelector('.pp-tag');
+          if (tag) tag.remove();
+          if (slideThemeClean(s)) {
+            const em = document.createElement('em');
+            em.className = 'pp-tag'; em.textContent = '已定制';
+            meta.appendChild(em);
+          }
+          if (info) info.textContent = '共 ' + deck.slides.length + ' 页 · ' + (perPageCount() ? perPageCount() + ' 页已单独定制' : '全部跟随全局');
+          try { PPT.renderThumb(thumb, s, deck, state.theme); } catch (e) { /* ignore */ }
+        });
+        ctrls.appendChild(wrap);
+      });
+
+      row.appendChild(thumb);
+      row.appendChild(meta);
+      row.appendChild(ctrls);
+      list.appendChild(row);
+      try { PPT.renderThumb(thumb, s, deck, state.theme); } catch (e) { /* ignore */ }
+    });
+  }
+
   function renderDeckGrid() {
     const deck = state.deck;
     if (!deck) return;
@@ -852,8 +1018,15 @@
       renderStylePicker(); renderPreview(); showPanel('style'); setStep(3);
     });
     $('#btn-back-outline').addEventListener('click', () => { renderOutline(); showPanel('outline'); setStep(2); });
-    $('#btn-to-deck').addEventListener('click', () => { renderDeckGrid(); showPanel('deck'); setStep(4); });
+    $('#btn-to-perpage').addEventListener('click', () => { renderPerPage(); showPanel('perpage'); setStep(4); });
+    $('#btn-to-deck').addEventListener('click', () => { renderDeckGrid(); showPanel('deck'); setStep(5); });
     $('#btn-back-style').addEventListener('click', () => { renderStylePicker(); renderPreview(); showPanel('style'); setStep(3); });
+    $('#btn-back-perpage').addEventListener('click', () => { renderPerPage(); showPanel('perpage'); setStep(4); });
+    $('#btn-perpage-reset').addEventListener('click', () => {
+      if (!state.deck) return;
+      state.deck.slides.forEach(s => { delete s.theme; });
+      save(); renderPerPage(); toast('已全部恢复为跟随全局');
+    });
 
     $('#btn-add-slide').addEventListener('click', () => {
       if (!state.deck) return;
@@ -890,7 +1063,8 @@
 
     if (state.deck) {
       renderOutline();
-      if (state.step >= 4) { renderStylePicker(); renderDeckGrid(); showPanel('deck'); setStep(4); }
+      if (state.step >= 5) { renderStylePicker(); renderDeckGrid(); showPanel('deck'); setStep(5); }
+      else if (state.step === 4) { renderStylePicker(); renderPerPage(); showPanel('perpage'); setStep(4); }
       else if (state.step === 3) { renderStylePicker(); renderPreview(); showPanel('style'); setStep(3); }
       else { showPanel('outline'); setStep(2); }
     } else {
