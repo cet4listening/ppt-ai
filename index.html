@@ -29,7 +29,8 @@
     <li data-step="1" class="is-current"><b>1</b><span>需求</span></li>
     <li data-step="2"><b>2</b><span>大纲</span></li>
     <li data-step="3"><b>3</b><span>风格</span></li>
-    <li data-step="4"><b>4</b><span>成品</span></li>
+    <li data-step="4"><b>4</b><span>逐页</span></li>
+    <li data-step="5"><b>5</b><span>成品</span></li>
   </ol>
 
   <div class="topbar-right">
@@ -125,7 +126,7 @@
         </div>
         <div class="panel-actions">
           <button class="btn ghost" id="btn-back-outline">← 回到大纲</button>
-          <button class="btn primary" id="btn-to-deck">生成演示文稿 →</button>
+          <button class="btn primary" id="btn-to-perpage">下一步：逐页定制 →</button>
         </div>
       </div>
 
@@ -158,15 +159,35 @@
       </div>
     </div>
 
-    <!-- 面板 4：成品 -->
+    <!-- 面板 4：逐页定制 -->
+    <div class="stage-panel" id="panel-perpage" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>第 4 步 · 逐页定制</h2>
+          <p class="muted">想让某几页跳出来？单独给它们换风格、配色、字体或动画；不选则跟随全局。</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btn-back-style">← 回到风格</button>
+          <button class="btn ghost" id="btn-perpage-reset">全部跟随全局</button>
+          <button class="btn primary" id="btn-to-deck">生成演示文稿 →</button>
+        </div>
+      </div>
+      <div class="perpage-bar">
+        <span class="muted" id="perpage-info"></span>
+        <span class="muted">点缩略图可放大预览</span>
+      </div>
+      <div class="perpage-list" id="perpage-list"></div>
+    </div>
+
+    <!-- 面板 5：成品 -->
     <div class="stage-panel" id="panel-deck" hidden>
       <div class="panel-head">
         <div>
-          <h2>第 4 步 · 成品</h2>
+          <h2>第 5 步 · 成品</h2>
           <p class="muted" id="deck-sub">点击任意一页可放大查看；放映时用 ← → 翻页。</p>
         </div>
         <div class="panel-actions">
-          <button class="btn ghost" id="btn-back-style">← 改风格</button>
+          <button class="btn ghost" id="btn-back-perpage">← 逐页微调</button>
           <button class="btn" id="btn-present">▶ 全屏放映</button>
           <button class="btn" id="btn-print">打印 / PDF</button>
           <button class="btn primary" id="btn-export-pptx">导出 PPTX</button>
