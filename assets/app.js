@@ -390,6 +390,26 @@
     return deck;
   }
 
+  /* 用户用自然语言指定图片位置时，兜底保证版式正确（模型偶尔会漏） */
+  function applyLayoutHint(deck, instruction) {
+    if (!deck || !deck.slides || !instruction) return deck;
+    const txt = String(instruction);
+    let layout = '';
+    if (/整页|满版|全屏图|大图铺满/.test(txt)) layout = 'full';
+    else if (/背景|底图|铺底/.test(txt)) layout = 'bg';
+    else if (/左边|左侧|放左|左图|图左/.test(txt)) layout = 'left';
+    else if (/右边|右侧|放右|右图|图右/.test(txt)) layout = 'right';
+    if (!layout) return deck;
+    const mm = txt.match(/第\s*(\d+)\s*页/);
+    const target = mm ? Number(mm[1]) - 1 : -1;
+    deck.slides.forEach((sl, i) => {
+      if (!sl || sl.type !== 'image') return;
+      if (target >= 0 && i !== target) return;
+      sl.image = Object.assign({}, sl.image || {}, { layout: layout });
+    });
+    return deck;
+  }
+
   function systemPrompt() {
     return [
       '你叫' + AI_NAME + '，是一位资深教学设计专家 + PPT 设计师，为中英文课堂（尤其中国中小学）制作课件。',
@@ -561,7 +581,7 @@
 
       let deck;
       try {
-        deck = fillImageSlides(normalizeDeck(parseJsonLoose(content)));
+        deck = applyLayoutHint(fillImageSlides(normalizeDeck(parseJsonLoose(content))), userRequest);
       } catch (e) {
         // 让模型自我修复一次
         renderTyping('正在修复结构…');
@@ -570,7 +590,7 @@
             { role: 'system', content: '你是 JSON 修复器。把用户给的内容改写成严格合法的 JSON，只输出 JSON，不要解释。结构：{"title","subtitle","meta":{},"slides":[...]}' },
             { role: 'user', content: content.slice(0, 12000) }
           ], { json: true, temperature: 0.2, maxTokens: 6000 });
-          deck = fillImageSlides(normalizeDeck(parseJsonLoose(fixed)));
+          deck = applyLayoutHint(fillImageSlides(normalizeDeck(parseJsonLoose(fixed))), userRequest);
         } finally { clearTyping(); }
       }
 
@@ -604,7 +624,7 @@
         { role: 'user', content: '当前课件 JSON：\n' + cur + attNote + '\n\n修改要求：' + userRequest }
       ], { json: true, temperature: 0.6, maxTokens: 6000 });
       clearTyping();
-      state.deck = fillImageSlides(normalizeDeck(parseJsonLoose(content)));
+      state.deck = applyLayoutHint(fillImageSlides(normalizeDeck(parseJsonLoose(content))), userRequest);
       renderOutline();
       if (state.step >= 3) { renderDeckGrid(); }
       pushMessage('ai', '已更新，现在是 ' + state.deck.slides.length + ' 页。');
