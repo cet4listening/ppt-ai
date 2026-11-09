@@ -64,7 +64,8 @@
       searchProxy: '',
       rememberKey: true,
       stepReveal: true,
-    exportProgressive: true
+    exportProgressive: true,
+    exportPixel: true
     },
     messages: [],
     attachments: [],
@@ -174,6 +175,7 @@
     if ($('#set-remember')) $('#set-remember').checked = state.settings.rememberKey !== false;
     if ($('#set-reveal')) $('#set-reveal').checked = state.settings.stepReveal !== false;
     if ($('#set-export-progressive')) $('#set-export-progressive').checked = state.settings.exportProgressive !== false;
+    if ($('#set-export-pixel')) $('#set-export-pixel').checked = state.settings.exportPixel !== false;
     $('#test-status').textContent = '';
     $('#test-status').className = 'dlg-status';
     $('#dlg-settings').showModal();
@@ -187,6 +189,7 @@
     state.settings.rememberKey = $('#set-remember') ? !!$('#set-remember').checked : true;
     state.settings.stepReveal = $('#set-reveal') ? !!$('#set-reveal').checked : true;
     state.settings.exportProgressive = $('#set-export-progressive') ? !!$('#set-export-progressive').checked : true;
+    state.settings.exportPixel = $('#set-export-pixel') ? !!$('#set-export-pixel').checked : true;
     if (window.SEARCH && SEARCH.setCustomProxy) SEARCH.setCustomProxy(state.settings.searchProxy);
     save();
     renderModelChip();
@@ -1133,20 +1136,43 @@
     if (!state.deck) { toast('先生成演示文稿'); return; }
     if (!window.EXPORTER || !EXPORTER.toPptx) { toast('导出模块未加载', 'err'); return; }
     const progressive = (opts && typeof opts.progressive === 'boolean') ? opts.progressive : (state.settings.exportProgressive !== false);
+    const pixel = (opts && typeof opts.pixel === 'boolean') ? opts.pixel : (state.settings.exportPixel !== false);
+    const useMode = mode || (pixel ? 'image' : 'native');
     let deck = state.deck;
     if (progressive) {
       deck = expandReveal(state.deck);
       if (!deck.slides.length) { toast('没有可展开的内容', 'err'); return; }
-      if (deck.slides.length > 160) { toast('逐条版会有 ' + deck.slides.length + ' 页，可能较大，请稍等…', '', 5000); }
     }
-    toast(progressive ? '正在生成逐条版（' + deck.slides.length + ' 页）…' : (mode === 'image' ? '正在渲染图片版（较慢）…' : '正在生成 PPTX…'), '', 6000);
+    const total = deck.slides.length;
+    const slow = useMode === 'image';
+    toast(slow ? ('正在逐页渲染（共 ' + total + ' 页，图片版较慢，请稍候）…') : ('正在生成 PPTX（' + total + ' 页）…'), '', slow ? 900000 : 8000);
+    let lastShown = 0;
+    const onProgress = (done, all) => {
+      if (!slow) return;
+      if (done === all || done - lastShown >= Math.max(1, Math.round(all / 12))) {
+        lastShown = done;
+        toast('正在渲染第 ' + done + ' / ' + all + ' 页…', '', 900000);
+      }
+    };
     try {
-      const res = await EXPORTER.toPptx(deck, state.theme, { mode: mode || 'native' });
+      const res = await EXPORTER.toPptx(deck, state.theme, { mode: useMode, onProgress: onProgress });
       let filename = res.filename || '课件.pptx';
       if (!progressive) filename = filename.replace(/\.pptx$/i, '') + '-单页版.pptx';
       downloadBlob(res.blob, filename);
-      toast('已导出：' + filename, 'ok');
+      toast('已导出：' + filename + '（' + res.slides + ' 页）', 'ok', 4200);
     } catch (e) {
+      if (useMode === 'image') {
+        toast('图片版渲染失败（' + e.message + '），改用可编辑文字版…', 'err', 5200);
+        try {
+          const res2 = await EXPORTER.toPptx(deck, state.theme, { mode: 'native' });
+          downloadBlob(res2.blob, res2.filename || '课件.pptx');
+          toast('已导出（可编辑文字版）：' + (res2.filename || '课件.pptx') + '（' + res2.slides + ' 页）', 'ok', 4600);
+          return;
+        } catch (e2) {
+          toast('导出失败：' + e2.message, 'err', 5200);
+          return;
+        }
+      }
       toast('导出失败：' + e.message, 'err', 5200);
     }
   }
@@ -1227,8 +1253,7 @@
     });
 
     $('#btn-present').addEventListener('click', () => present(0));
-    $('#btn-export-pptx').addEventListener('click', () => exportPptx('native'));
-    $('#btn-export-img').addEventListener('click', () => exportPptx('image'));
+    $('#btn-export-pptx').addEventListener('click', () => exportPptx());
     $('#btn-print').addEventListener('click', () => {
       if (window.EXPORTER && EXPORTER.printPdf) EXPORTER.printPdf();
       else window.print();
