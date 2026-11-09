@@ -826,7 +826,7 @@
       '</aside>' +
       '<div class="pp-bottom">' +
         '<div class="pp-bottom-row">' +
-          '<span class="pp-hint">← → 翻页 · F 全屏 · N 讲稿 · ESC 退出</span>' +
+          '<span class="pp-hint"><b>点击任意处</b>继续 · ← 回退 · F 全屏 · N 讲稿 · ESC 退出</span>' +
           '<span class="pp-counter"><b>1</b><span>/ ' + total + '</span></span>' +
         '</div>' +
         '<div class="pp-progress"><i></i></div>' +
@@ -868,8 +868,11 @@
       var steps = stepsNow();
       var box = overlay.querySelector('.pp-steplabel');
       if (!box) return;
-      box.textContent = steps.length ? '逐条 ' + revealed + ' / ' + steps.length : '';
+      box.textContent = steps.length ? '逐条 ' + revealed + ' / ' + steps.length + (revealed < steps.length ? ' · 点击继续' : '') : '';
       box.style.display = steps.length ? '' : 'none';
+      box.classList.toggle('is-waiting', !!steps.length && revealed < steps.length);
+      var hint = overlay.querySelector('.pp-hint');
+      if (hint) hint.classList.toggle('is-waiting', !!steps.length && revealed < steps.length);
     }
     function smartNext() {
       var steps = stepsNow();
@@ -999,14 +1002,51 @@
 
     overlay.addEventListener('click', function (e) {
       var target = e.target.closest ? e.target.closest('[data-act]') : null;
-      if (!target) return;
-      var act = target.getAttribute('data-act');
-      if (act === 'next') smartNext();
-      else if (act === 'prev') smartPrev();
-      else if (act === 'close') close();
-      else if (act === 'notes') toggleNotes();
-      else if (act === 'fullscreen') toggleFullscreen();
+      if (target) {
+        var act = target.getAttribute('data-act');
+        if (act === 'next') smartNext();
+        else if (act === 'prev') smartPrev();
+        else if (act === 'close') close();
+        else if (act === 'notes') toggleNotes();
+        else if (act === 'fullscreen') toggleFullscreen();
+        return;
+      }
+      // 整屏任意位置都能点：左侧 26% 回退，其余前进（顶栏/讲稿/底栏除外）
+      if (e.target.closest && e.target.closest('.pp-topbar, .pp-notes, .pp-bottom')) return;
+      if (e.target.closest && e.target.closest('video, audio, a, button, input, select')) return;
+      var w = overlay.clientWidth || 1;
+      var x = (e.clientX == null ? w / 2 : e.clientX);
+      if (x < w * 0.26) smartPrev(); else smartNext();
     });
+
+    // 滚轮 / 触控板：下滚前进、上滚回退（带 260ms 节流）
+    var wheelLock = 0;
+    overlay.addEventListener('wheel', function (e) {
+      if (e.target.closest && e.target.closest('.pp-notes, .pp-topbar')) return;
+      var now = Date.now();
+      if (now - wheelLock < 260) return;
+      var dy = e.deltaY || 0;
+      if (Math.abs(dy) < 4) return;
+      wheelLock = now;
+      e.preventDefault();
+      if (dy > 0) smartNext(); else smartPrev();
+    }, { passive: false });
+
+    // 手机 / 平板：左右滑动手势
+    var touchX = null, touchY = null;
+    overlay.addEventListener('touchstart', function (e) {
+      if (!e.touches || !e.touches.length) return;
+      touchX = e.touches[0].clientX; touchY = e.touches[0].clientY;
+    }, { passive: true });
+    overlay.addEventListener('touchend', function (e) {
+      if (touchX == null || !e.changedTouches || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      var dy = e.changedTouches[0].clientY - touchY;
+      touchX = null; touchY = null;
+      if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        if (dx < 0) smartNext(); else smartPrev();
+      }
+    }, { passive: true });
 
     document.body.classList.add('pp-presenting');
     document.body.appendChild(overlay);
