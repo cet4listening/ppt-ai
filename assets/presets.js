@@ -89,6 +89,30 @@
       name: '留白禅意',
       desc: '大留白、细线与一枚淡墨圆相，克制安静，适合语文与美育',
       hint: 'Zen'
+    },
+    {
+      id: 'swiss',
+      name: '瑞士网格',
+      desc: '左对齐大标题、国际主义网格与一小块强调色，理性有力，适合公开课与汇报',
+      hint: 'Swiss Style'
+    },
+    {
+      id: 'magazine',
+      name: '杂志跨栏',
+      desc: '衬线报头、跨栏正文与整幅大图，像一本刊物内页，适合语文与人文',
+      hint: 'Magazine'
+    },
+    {
+      id: 'mint',
+      name: '薄荷清透',
+      desc: '薄荷渐变、轻柔圆角与高光卡片，清透治愈，适合小学与美育',
+      hint: 'Fresh Mint'
+    },
+    {
+      id: 'noir',
+      name: '黑白电影',
+      desc: '黑白强对比、胶片颗粒与黑边字幕条，戏剧张力强，适合文学与历史',
+      hint: 'Film Noir'
     }
   ];
 
@@ -236,6 +260,38 @@
         bg: '#fbf7ff', surface: '#f2e9ff', text: '#2b1b3d', muted: '#7c6a92',
         primary: '#7c4dd6', accent: '#e26fa8', line: 'rgba(43,27,61,.10)'
       }
+    },
+    {
+      id: 'peach',
+      name: '蜜桃',
+      colors: {
+        bg: '#fff8f5', surface: '#ffe9e0', text: '#33201a', muted: '#8a6255',
+        primary: '#e46a4b', accent: '#4a9d8e', line: 'rgba(51,32,26,.10)'
+      }
+    },
+    {
+      id: 'sky',
+      name: '晴空',
+      colors: {
+        bg: '#f4faff', surface: '#e3f2ff', text: '#12283d', muted: '#557088',
+        primary: '#2f80d8', accent: '#f0a03c', line: 'rgba(18,40,61,.10)'
+      }
+    },
+    {
+      id: 'olive',
+      name: '橄榄',
+      colors: {
+        bg: '#f7f8f0', surface: '#e9ecda', text: '#262b1a', muted: '#646b4e',
+        primary: '#6f7d2f', accent: '#c06a3a', line: 'rgba(38,43,26,.12)'
+      }
+    },
+    {
+      id: 'plum',
+      name: '梅子紫',
+      colors: {
+        bg: '#1d1120', surface: '#2a1830', text: '#f7eef8', muted: '#c0a5c9',
+        primary: '#d48be0', accent: '#f0c46a', line: 'rgba(247,238,248,.14)'
+      }
     }
   ];
 
@@ -289,6 +345,16 @@
       id: 'serif-modern', name: '现代宋体标题',
       heading: '"Songti SC","Source Han Serif SC","Noto Serif CJK SC","SimSun",Georgia,serif',
       body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'latin-serif', name: '拉丁衬线',
+      heading: 'Georgia,"Times New Roman","Songti SC","SimSun","Source Han Serif SC",serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'kai-soft', name: '柔和楷体',
+      heading: 'KaiTi,"Kaiti SC","STKaiti","Songti SC","SimSun",serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
     }
   ];
 
@@ -304,7 +370,9 @@
     { id: 'flip', name: '3D 轻翻转', cssClass: 'anim-flip' },
     { id: 'blur-in', name: '模糊聚焦', cssClass: 'anim-blur-in' },
     { id: 'slide-right', name: '右侧滑入', cssClass: 'anim-slide-right' },
-    { id: 'pop-in', name: '弹入', cssClass: 'anim-pop-in' }
+    { id: 'pop-in', name: '弹入', cssClass: 'anim-pop-in' },
+    { id: 'slide-in-left', name: '自左滑入', cssClass: 'anim-slide-in-left' },
+    { id: 'rise-blur', name: '上浮模糊', cssClass: 'anim-rise-blur' }
   ];
 
   function get(theme) {
