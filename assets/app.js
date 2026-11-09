@@ -63,7 +63,8 @@
       model: 'deepseek-chat',
       searchProxy: '',
       rememberKey: true,
-      stepReveal: true
+      stepReveal: true,
+    exportProgressive: true
     },
     messages: [],
     attachments: [],
@@ -172,6 +173,7 @@
     $('#set-proxy').value = state.settings.searchProxy || '';
     if ($('#set-remember')) $('#set-remember').checked = state.settings.rememberKey !== false;
     if ($('#set-reveal')) $('#set-reveal').checked = state.settings.stepReveal !== false;
+    if ($('#set-export-progressive')) $('#set-export-progressive').checked = state.settings.exportProgressive !== false;
     $('#test-status').textContent = '';
     $('#test-status').className = 'dlg-status';
     $('#dlg-settings').showModal();
@@ -184,6 +186,7 @@
     state.settings.searchProxy = ($('#set-proxy').value || '').trim();
     state.settings.rememberKey = $('#set-remember') ? !!$('#set-remember').checked : true;
     state.settings.stepReveal = $('#set-reveal') ? !!$('#set-reveal').checked : true;
+    state.settings.exportProgressive = $('#set-export-progressive') ? !!$('#set-export-progressive').checked : true;
     if (window.SEARCH && SEARCH.setCustomProxy) SEARCH.setCustomProxy(state.settings.searchProxy);
     save();
     renderModelChip();
@@ -1129,7 +1132,7 @@
   async function exportPptx(mode, opts) {
     if (!state.deck) { toast('先生成演示文稿'); return; }
     if (!window.EXPORTER || !EXPORTER.toPptx) { toast('导出模块未加载', 'err'); return; }
-    const progressive = !!(opts && opts.progressive);
+    const progressive = (opts && typeof opts.progressive === 'boolean') ? opts.progressive : (state.settings.exportProgressive !== false);
     let deck = state.deck;
     if (progressive) {
       deck = expandReveal(state.deck);
@@ -1226,8 +1229,6 @@
     $('#btn-present').addEventListener('click', () => present(0));
     $('#btn-export-pptx').addEventListener('click', () => exportPptx('native'));
     $('#btn-export-img').addEventListener('click', () => exportPptx('image'));
-    const revealBtn = $('#btn-export-reveal');
-    if (revealBtn) revealBtn.addEventListener('click', () => exportPptx('native', { progressive: true }));
     $('#btn-print').addEventListener('click', () => {
       if (window.EXPORTER && EXPORTER.printPdf) EXPORTER.printPdf();
       else window.print();
