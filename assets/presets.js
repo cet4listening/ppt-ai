@@ -35,6 +35,36 @@
       name: '温暖纸感',
       desc: '米色纸纹、衬线标题，适合语文与人文',
       hint: 'Warm'
+    },
+    {
+      id: 'glass',
+      name: '玻璃拟态',
+      desc: '半透明磨砂卡片 + 柔和光晕，通透轻盈，适合科技与美育',
+      hint: 'Glassmorphism'
+    },
+    {
+      id: 'retro',
+      name: '复古印刷',
+      desc: '粗描边、错位套印与旧纸颗粒，像一张老海报，适合历史与人文',
+      hint: 'Retro Print'
+    },
+    {
+      id: 'ink',
+      name: '水墨中国',
+      desc: '大留白、细笔触与竖排题签，墨色淡雅，适合语文与传统文化',
+      hint: 'Ink Wash'
+    },
+    {
+      id: 'grid',
+      name: '极简网格',
+      desc: '细网格、等宽数字与克制强调色，理性精确，适合理科与数据',
+      hint: 'Swiss Grid'
+    },
+    {
+      id: 'neon',
+      name: '霓虹科技',
+      desc: '深底发光描边与渐变光带，赛博感强，适合信息科技与编程',
+      hint: 'Neon'
     }
   ];
 
@@ -102,6 +132,54 @@
         bg: '#ffffff', surface: '#f5f5f5', text: '#111111', muted: '#737373',
         primary: '#111111', accent: '#e11d48', line: 'rgba(17,17,17,.12)'
       }
+    },
+    {
+      id: 'mint',
+      name: '薄荷',
+      colors: {
+        bg: '#f6fdfb', surface: '#e7f7f1', text: '#0c2f28', muted: '#5c7f76',
+        primary: '#0f9d76', accent: '#f2768b', line: 'rgba(12,47,40,.10)'
+      }
+    },
+    {
+      id: 'sand',
+      name: '暖沙',
+      colors: {
+        bg: '#faf6ee', surface: '#f1e8d7', text: '#2e2417', muted: '#7d6b52',
+        primary: '#b06a2c', accent: '#2f7d6b', line: 'rgba(46,36,23,.10)'
+      }
+    },
+    {
+      id: 'rose',
+      name: '玫瑰粉',
+      colors: {
+        bg: '#fff7f9', surface: '#ffe9ef', text: '#351b25', muted: '#8f6172',
+        primary: '#c2185b', accent: '#8b5cf6', line: 'rgba(53,27,37,.10)'
+      }
+    },
+    {
+      id: 'slate',
+      name: '石板灰蓝',
+      colors: {
+        bg: '#f5f7fa', surface: '#e7edf4', text: '#1c2733', muted: '#5f6f80',
+        primary: '#476b8f', accent: '#d98b3a', line: 'rgba(28,39,51,.12)'
+      }
+    },
+    {
+      id: 'aurora',
+      name: '极光绿紫',
+      colors: {
+        bg: '#0b1220', surface: '#142033', text: '#eafaf4', muted: '#93b8ad',
+        primary: '#3ddc97', accent: '#a78bfa', line: 'rgba(234,250,244,.14)'
+      }
+    },
+    {
+      id: 'coffee',
+      name: '咖啡棕',
+      colors: {
+        bg: '#f8f3ed', surface: '#ece2d5', text: '#2a1f17', muted: '#7a6655',
+        primary: '#6f4a2f', accent: '#c98a3c', line: 'rgba(42,31,23,.12)'
+      }
     }
   ];
 
@@ -130,6 +208,21 @@
       id: 'mono-en', name: '等宽科技',
       heading: 'ui-monospace,"JetBrains Mono","Cascadia Mono",Consolas,monospace',
       body: '"Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'display-serif', name: '衬线大标题',
+      heading: 'Georgia,"Times New Roman","Songti SC","SimSun","Source Han Serif SC",serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'hand', name: '手写楷书',
+      heading: 'KaiTi,"Kaiti SC","STKaiti","楷体","Xingkai SC",cursive',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
+    },
+    {
+      id: 'condensed', name: '窄体标题',
+      heading: '"Arial Narrow","Impact","Haettenschweiler","Microsoft YaHei","PingFang SC",sans-serif',
+      body: '"Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif'
     }
   ];
 
@@ -139,7 +232,11 @@
     { id: 'slide-left', name: '左侧滑入', cssClass: 'anim-slide-left' },
     { id: 'zoom', name: '缩放浮现', cssClass: 'anim-zoom' },
     { id: 'wipe', name: '擦除揭示', cssClass: 'anim-wipe' },
-    { id: 'none', name: '无动画', cssClass: 'anim-none' }
+    { id: 'none', name: '无动画', cssClass: 'anim-none' },
+    { id: 'zoom-in', name: '缩放淡入', cssClass: 'anim-zoom-in' },
+    { id: 'wipe-up', name: '自下擦除', cssClass: 'anim-wipe-up' },
+    { id: 'flip', name: '3D 轻翻转', cssClass: 'anim-flip' },
+    { id: 'blur-in', name: '模糊聚焦', cssClass: 'anim-blur-in' }
   ];
 
   function get(theme) {
