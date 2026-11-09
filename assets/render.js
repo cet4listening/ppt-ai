@@ -472,6 +472,8 @@
     var bullets = arr(slide.bullets).map(cleanItem).filter(Boolean).slice(0, 4);
 
     var kind = text(image.kind) || 'image';
+    var layout = text(image.layout) || 'right';
+    if (['right', 'left', 'full', 'bg'].indexOf(layout) < 0) layout = 'right';
     var figure;
     if (!src) {
       figure = '<div class="image-ph" aria-hidden="true">' + IMAGE_ICON + '<b>' +
@@ -488,7 +490,7 @@
 
     return '' +
       '<div class="s-inner">' +
-        '<div class="image-layout">' +
+        '<div class="image-layout layout-' + layout + '">' +
           '<div class="image-text">' +
             headHTML(title, sub, 'VISUAL', '图示') +
             (bullets.length ? '<ul class="image-bullets">' + bullets.map(function (t, k) {
