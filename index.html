@@ -195,8 +195,7 @@
         </div>
       </div>
       <div class="deck-tools">
-        <button class="btn tiny ghost" id="btn-export-img">导出图片版（像素级还原）</button>
-        <span class="muted" id="deck-info"></span>
+                <span class="muted" id="deck-info"></span>
       </div>
       <div class="deck-grid" id="deck-grid"></div>
     </div>
@@ -218,7 +217,8 @@
         <label class="chk-line"><input type="checkbox" id="set-remember" checked> 在这台电脑记住 Key（取消勾选 = 只在当前标签页有效）</label>
     </label>
     <label class="chk-line chk-block"><input type="checkbox" id="set-reveal" checked> 放映时逐条显示（点一下出现下一块内容）</label>
-    <label class="chk-line chk-block"><input type="checkbox" id="set-export-progressive" checked> 导出的 PPTX 按「逐条」拆页（点击逐条出现，WPS/PowerPoint 都一致）</label>
+    <label class="chk-line chk-block"><input type="checkbox" id="set-export-progressive" checked> 导出的 PPTX 按「逐条」拆页（点击逐条出现）</label>
+        <label class="chk-line chk-block"><input type="checkbox" id="set-export-pixel" checked> 图片版导出：画面与网页放映完全一致（关掉则导出可编辑文字，但样式会有差异）</label>
     <label>模型
       <input id="set-model" type="text" list="model-list" placeholder="deepseek-chat" autocomplete="off">
       <datalist id="model-list">
