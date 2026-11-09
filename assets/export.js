@@ -1095,6 +1095,38 @@
    *  对外 API
    * ===================================================================== */
 
+
+  /* 给每一页加「淡入」切换：WPS/PowerPoint 里点击翻页时柔和过渡，
+     与网页「逐条出现」的观感一致。失败时原样返回，不影响导出。 */
+  async function addFadeTransitions(blob) {
+    var JSZipLib = global.JSZip;
+    if (!JSZipLib) return blob;
+    try {
+      var zip = await JSZipLib.loadAsync(blob);
+      var names = [];
+      zip.forEach(function (rel, file) {
+        if (/^ppt\/slides\/slide\d+\.xml$/.test(rel)) names.push(rel);
+      });
+      if (!names.length) return blob;
+      for (var i = 0; i < names.length; i++) {
+        var rel = names[i];
+        var xml = await zip.file(rel).async('string');
+        if (xml.indexOf('<p:transition') >= 0) continue;
+        var tr = '<p:transition spd="med"><p:fade/></p:transition>';
+        if (xml.indexOf('<p:timing') >= 0) xml = xml.replace('<p:timing', tr + '<p:timing');
+        else if (xml.indexOf('</p:sld>') >= 0) xml = xml.replace('</p:sld>', tr + '</p:sld>');
+        else continue;
+        zip.file(rel, xml);
+      }
+      return await zip.generateAsync({
+        type: 'blob',
+        mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      });
+    } catch (e) {
+      return blob;
+    }
+  }
+
   async function toPptx(deck, theme, opts) {
     opts = opts || {};
     var mode = opts.mode === 'image' ? 'image' : 'native';
@@ -1147,6 +1179,9 @@
       try { blob = new Blob([blob], { type: PPTX_MIME }); } catch (e) { /* 保留原 blob */ }
     }
     if (!blob || !blob.size) throw new Error('导出失败：生成的文件为空');
+    if (mode === 'image' && opts.transition !== false) {
+      blob = await addFadeTransitions(blob);
+    }
 
     return {
       blob: blob,
