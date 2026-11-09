@@ -888,24 +888,42 @@
     end: renderEnd
   };
 
-  function renderNative(pptx, deck, T) {
+
+  /* ---- 逐页主题：把 slide.theme 合并到全局 theme ---- */
+  function slideTheme(theme, s) {
+    var t = s && s.theme;
+    if (!t) return theme;
+    var merged = {}, k, has = false;
+    for (k in theme) { if (Object.prototype.hasOwnProperty.call(theme, k)) merged[k] = theme[k]; }
+    for (k in t) {
+      if (!Object.prototype.hasOwnProperty.call(t, k)) continue;
+      var v = t[k];
+      if (v === '' || v == null) continue;
+      merged[k] = v; has = true;
+    }
+    return has ? merged : theme;
+  }
+
+  function renderNative(pptx, deck, T, theme) {
     var slides = (deck && deck.slides) || [];
     if (!slides.length) throw new Error('没有可导出的内容：deck.slides 为空');
     var total = slides.length;
 
     slides.forEach(function (s, i) {
       s = s || {};
+      var oneTheme = theme ? slideTheme(theme, s) : null;
+      var Ti = (oneTheme && oneTheme !== theme) ? resolveTheme(oneTheme) : T;
       var fn = RENDERERS[s.type] || renderBullets;
       var slide;
       try {
-        slide = fn(pptx, s, T, i, total);
+        slide = fn(pptx, s, Ti, i, total);
       } catch (e) {
         // 单页失败 → 用 bullets 兜底，整体不中断
         slide = renderBullets(pptx, {
           type: 'bullets',
           title: asText(s.title) || '第 ' + (i + 1) + ' 页',
           bullets: [asText(s.subtitle) || '（本页内容无法渲染）']
-        }, T, i, total);
+        }, Ti, i, total);
       }
       var notes = asText(s.notes);
       if (notes && slide && typeof slide.addNotes === 'function') {
@@ -1089,7 +1107,7 @@
       var canvasList = await renderShots(deck, theme, T, opts);
       count = renderImageDeck(pptx, canvasList, deck);
     } else {
-      count = renderNative(pptx, deck, T);
+      count = renderNative(pptx, deck, T, theme);
     }
 
     var blob;
