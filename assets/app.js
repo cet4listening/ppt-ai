@@ -1143,7 +1143,7 @@
     try {
       const res = await EXPORTER.toPptx(deck, state.theme, { mode: mode || 'native' });
       let filename = res.filename || '课件.pptx';
-      if (progressive) filename = filename.replace(/\.pptx$/i, '') + '-逐条版.pptx';
+      if (!progressive) filename = filename.replace(/\.pptx$/i, '') + '-单页版.pptx';
       downloadBlob(res.blob, filename);
       toast('已导出：' + filename, 'ok');
     } catch (e) {
