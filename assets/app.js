@@ -1076,14 +1076,73 @@
     } catch (e) { toast('放映失败：' + e.message, 'err'); }
   }
 
-  async function exportPptx(mode) {
+  /* 把“逐条出现”展开成多张静态页：第 1 张只有标题，第 2 张多一条……
+     这样导出的 pptx 在任何播放器里都是“一条条出现”，不依赖动画 XML。 */
+  function expandReveal(deck) {
+    if (!deck || !Array.isArray(deck.slides)) return deck;
+    const out = Object.assign({}, deck, { slides: [] });
+    deck.slides.forEach((s) => {
+      const base = Object.assign({}, s);
+      delete base.notes;
+      const t = s.type;
+      let vars = [];
+      const listItems = Array.isArray(s.bullets) ? s.bullets : (Array.isArray(s.items) ? s.items : null);
+      if ((t === 'bullets' || t === 'list') && listItems && listItems.length) {
+        for (let k = 0; k <= listItems.length; k++) {
+          const v = Object.assign({}, base);
+          if (Array.isArray(s.bullets)) v.bullets = s.bullets.slice(0, k); else v.items = s.items.slice(0, k);
+          vars.push(v);
+        }
+      } else if (t === 'two-col' && Array.isArray(s.columns) && s.columns.length) {
+        const srcOf = c => (Array.isArray(c && c.items) ? c.items : (Array.isArray(c && c.bullets) ? c.bullets : []));
+        const cols = s.columns.map(c => Object.assign({}, c, { bullets: srcOf(c).slice(), items: srcOf(c).slice() }));
+        const totalItems = cols.reduce((a, c) => a + c.bullets.length, 0);
+        if (!totalItems) vars.push(base);
+        else {
+          for (let k = 0; k <= totalItems; k++) {
+            let remain = k;
+            const vcols = cols.map(c => {
+              const take = Math.min(remain, c.bullets.length);
+              remain -= take;
+              return Object.assign({}, c, { bullets: c.bullets.slice(0, take), items: c.bullets.slice(0, take) });
+            });
+            vars.push(Object.assign({}, base, { columns: vcols }));
+          }
+        }
+      } else if (t === 'stats' && Array.isArray(s.stats) && s.stats.length) {
+        for (let k = 1; k <= s.stats.length; k++) vars.push(Object.assign({}, base, { stats: s.stats.slice(0, k) }));
+      } else if (t === 'quote') {
+        vars.push(Object.assign({}, base, { author: '' }));
+        vars.push(Object.assign({}, base));
+      } else {
+        vars.push(base);
+      }
+      if (s.homework) {
+        vars = vars.map(v => { const c = Object.assign({}, v); delete c.homework; return c; });
+        vars[vars.length - 1].homework = s.homework;
+      }
+      vars.forEach((v, i) => { if (i === 0 && s.notes) v.notes = s.notes; out.slides.push(v); });
+    });
+    return out;
+  }
+
+  async function exportPptx(mode, opts) {
     if (!state.deck) { toast('先生成演示文稿'); return; }
     if (!window.EXPORTER || !EXPORTER.toPptx) { toast('导出模块未加载', 'err'); return; }
-    toast(mode === 'image' ? '正在渲染图片版（较慢）…' : '正在生成 PPTX…', '', 6000);
+    const progressive = !!(opts && opts.progressive);
+    let deck = state.deck;
+    if (progressive) {
+      deck = expandReveal(state.deck);
+      if (!deck.slides.length) { toast('没有可展开的内容', 'err'); return; }
+      if (deck.slides.length > 160) { toast('逐条版会有 ' + deck.slides.length + ' 页，可能较大，请稍等…', '', 5000); }
+    }
+    toast(progressive ? '正在生成逐条版（' + deck.slides.length + ' 页）…' : (mode === 'image' ? '正在渲染图片版（较慢）…' : '正在生成 PPTX…'), '', 6000);
     try {
-      const { blob, filename } = await EXPORTER.toPptx(state.deck, state.theme, { mode: mode || 'native' });
-      downloadBlob(blob, filename || '课件.pptx');
-      toast('已导出：' + (filename || '课件.pptx'), 'ok');
+      const res = await EXPORTER.toPptx(deck, state.theme, { mode: mode || 'native' });
+      let filename = res.filename || '课件.pptx';
+      if (progressive) filename = filename.replace(/\.pptx$/i, '') + '-逐条版.pptx';
+      downloadBlob(res.blob, filename);
+      toast('已导出：' + filename, 'ok');
     } catch (e) {
       toast('导出失败：' + e.message, 'err', 5200);
     }
@@ -1167,6 +1226,8 @@
     $('#btn-present').addEventListener('click', () => present(0));
     $('#btn-export-pptx').addEventListener('click', () => exportPptx('native'));
     $('#btn-export-img').addEventListener('click', () => exportPptx('image'));
+    const revealBtn = $('#btn-export-reveal');
+    if (revealBtn) revealBtn.addEventListener('click', () => exportPptx('native', { progressive: true }));
     $('#btn-print').addEventListener('click', () => {
       if (window.EXPORTER && EXPORTER.printPdf) EXPORTER.printPdf();
       else window.print();
