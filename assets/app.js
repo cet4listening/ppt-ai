@@ -407,7 +407,8 @@
         : '7) 用户没有上传图片：不要放图片链接（放了也不会加载）。确实需要图才能讲清的地方，可以插入 1–3 页 image 页型：title 写这页讲什么，subtitle 写「建议配图：……」（说明画什么），caption 写图注；不要连续两页都是 image。',
       '8) 每个知识点要能自洽：标题是结论或问题，要点里给出依据、例子或步骤；不要只堆名词。',
       '9) 面向小学生的课件，每个 section 至少安排 1 个互动（提问 / 跟读 / 小游戏 / 动手做）。',
-      '10) 可选字段 homework：给 2–4 页（优先知识点页与小结页）写一句「课后思考」，让学生带着问题回家想，一句话、不超过 30 字；其余页面不要写这个字段。'
+      '10) image 页型可带 image.layout：right（图在右，默认）/ left（图在左）/ full（整页大图）/ bg（图铺满背景、文字浮在上方）。用户说「图放右边 / 放左边 / 整页图 / 当背景」时必须据此设置 layout；如果没有可选 layout 就写 right。',
+      '11) 可选字段 homework：给 2–4 页（优先知识点页与小结页）写一句「课后思考」，让学生带着问题回家想，一句话、不超过 30 字；其余页面不要写这个字段。'
     ].join('\n');
   }
 
@@ -471,16 +472,23 @@
         // 只接受本地素材 / data:image / blob: / https，防止模型塞进奇怪协议的地址
         var rawSrc = String(s.image.src || '');
         var okSrc = /^(data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,|blob:|https?:\/\/|assets\/|\.\.?\/)/i.test(rawSrc) ? rawSrc : '';
-        out.image = { caption: String(s.image.caption || '').trim(), src: okSrc, kind: String(s.image.kind || 'image') };
+        var lay = String(s.image.layout || 'right');
+        if (['right', 'left', 'full', 'bg'].indexOf(lay) < 0) lay = 'right';
+        out.image = { caption: String(s.image.caption || '').trim(), src: okSrc, kind: String(s.image.kind || 'image'), layout: lay };
+        if (s.image.useAttachment) out.image.useAttachment = true;
       }
       if (s.quote) out.quote = String(s.quote).trim();
       if (s.author) out.author = String(s.author).trim();
       if (s.image && (s.image.src || s.image.caption)) {
+        var lay2 = String(s.image.layout || 'right');
+        if (['right', 'left', 'full', 'bg'].indexOf(lay2) < 0) lay2 = 'right';
         out.image = {
           src: String(s.image.src || '').trim(),
           caption: String(s.image.caption || '').trim(),
-          kind: String(s.image.kind || 'image')
+          kind: String(s.image.kind || 'image'),
+          layout: lay2
         };
+        if (s.image.useAttachment) out.image.useAttachment = true;
       }
       if (s.homework) out.homework = String(s.homework).trim();
       if (Array.isArray(s.stats)) out.stats = s.stats.slice(0, 4).map(x => ({ value: String((x && x.value) || ''), label: String((x && x.label) || '') }));
@@ -586,9 +594,14 @@
     try {
       renderTyping('正在按你的要求调整…');
       const cur = JSON.stringify(state.deck).slice(0, 14000);
+      const att = (state.attachments || []).filter(a => a && (a.kind === 'image' || a.kind === 'video' || a.kind === 'audio'));
+      const attNote = att.length
+        ? '\n\n用户当前可用素材（按上传顺序）：' + att.map((a, i) => (i + 1) + '. ' + a.kind + '「' + (a.name || '') + '」').join('；') +
+          '。若用户要求「把图片/视频放到第 N 页右边/左边/整页/背景」，请把第 N 页改成 image 页型并设置 image.layout 对应值，同时把 image.useAttachment 设为 true 表示使用刚上传的素材，不要编造图片地址。'
+        : '';
       const content = await callModel([
         { role: 'system', content: systemPrompt() + '\n\n现在用户会对已有课件提出修改，请输出修改后的**完整** JSON。' },
-        { role: 'user', content: '当前课件 JSON：\n' + cur + '\n\n修改要求：' + userRequest }
+        { role: 'user', content: '当前课件 JSON：\n' + cur + attNote + '\n\n修改要求：' + userRequest }
       ], { json: true, temperature: 0.6, maxTokens: 6000 });
       clearTyping();
       state.deck = fillImageSlides(normalizeDeck(parseJsonLoose(content)));
@@ -662,6 +675,12 @@
         '  <input class="hw-in" data-f="homework" placeholder="课后思考（可选）：留一句给学生的思考题，留空则这一页不显示" value="' + esc(s.homework || '') + '">' +
         '  <div class="img-slot' + (hasImg ? ' has' : '') + '">' +
         '    <span class="img-label">' + (img.kind === 'video' ? '视频' : img.kind === 'audio' ? '音频' : '配图') + '</span>' +
+        '    <select class="img-layout" data-f="layout" title="图片位置">' +
+        '      <option value="right"' + ((img.layout || 'right') === 'right' ? ' selected' : '') + '>图在右</option>' +
+        '      <option value="left"' + (img.layout === 'left' ? ' selected' : '') + '>图在左</option>' +
+        '      <option value="full"' + (img.layout === 'full' ? ' selected' : '') + '>整页图</option>' +
+        '      <option value="bg"' + (img.layout === 'bg' ? ' selected' : '') + '>图作背景</option>' +
+        '    </select>' +
         '    <button class="mini-btn" type="button" data-a="pick-img">选图</button>' +
         '    <button class="mini-btn" type="button" data-a="pick-video">视频</button>' +
         '    <button class="mini-btn" type="button" data-a="pick-audio">音频</button>' +
@@ -692,6 +711,12 @@
           else if (f === 'homework') {
             const hv = inp.value.trim();
             if (hv) s.homework = hv; else delete s.homework;
+          }
+          else if (f === 'layout') {
+            s.image = Object.assign({}, s.image || {}, { layout: inp.value });
+            save();
+            if (state.step >= 3) { try { renderDeckGrid(); } catch (e) {} }
+            return;
           }
           else if (f === 'imageUrl' || f === 'caption') {
             const next = Object.assign({}, s.image || {});
