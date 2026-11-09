@@ -1020,7 +1020,7 @@
     var h2c = await ensureHtml2Canvas();
     await waitFonts();
 
-    var scale = Math.max(1, Math.min(3, Number(opts && opts.scale) || 1.5));
+    var scale = Math.max(1, Math.min(3, Number(opts && opts.scale) || 1.25));
     var host = document.createElement('div');
     host.setAttribute('data-pp-export', 'image');
     host.style.cssText =
@@ -1048,6 +1048,9 @@
           if (direct) { forceVisible(direct); direct.style.position = 'relative'; }
           else { forceVisible(box); }
           canvasList.push(await shoot(direct || box, h2c, T.colors.bg, scale));
+          if (opts && typeof opts.onProgress === 'function') {
+            try { opts.onProgress(i + 1, slides.length); } catch (e) { /* ignore */ }
+          }
         }
       } else {
         PPT.renderDeck(host, deck, theme, { export: true });
@@ -1059,6 +1062,9 @@
           forceVisible(el);
           await nextFrame();
           canvasList.push(await shoot(el, h2c, T.colors.bg, scale));
+          if (opts && typeof opts.onProgress === 'function') {
+            try { opts.onProgress(k + 1, nodes.length); } catch (e) { /* ignore */ }
+          }
         }
       }
     } finally {
@@ -1069,12 +1075,13 @@
     return canvasList;
   }
 
-  function renderImageDeck(pptx, canvasList, deck) {
+  function renderImageDeck(pptx, canvasList, deck, quality) {
     var slides = (deck && deck.slides) || [];
     canvasList.forEach(function (cv, i) {
       var slide = pptx.addSlide();
       var data;
-      try { data = cv.toDataURL(JPQ, 0.92); }
+      var q = Math.max(0.6, Math.min(0.98, Number(quality) || 0.88));
+      try { data = cv.toDataURL(JPQ, q); }
       catch (e) { data = cv.toDataURL('image/png'); }
       slide.addImage({ data: data, x: 0, y: 0, w: PAGE_W, h: PAGE_H });
       // 图片版页面本身不可编辑，但演讲者备注仍然保留
@@ -1114,7 +1121,7 @@
     var count;
     if (mode === 'image') {
       var canvasList = await renderShots(deck, theme, T, opts);
-      count = renderImageDeck(pptx, canvasList, deck);
+      count = renderImageDeck(pptx, canvasList, deck, opts.quality);
     } else {
       count = renderNative(pptx, deck, T, theme);
     }
