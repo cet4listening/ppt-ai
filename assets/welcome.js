@@ -76,7 +76,7 @@
 
   function start(el) {
     root = el;
-    document.body.appendChild(el);
+    (document.body || document.documentElement).appendChild(el);
 
     // 首次访问时给主界面一点「浮上来」的入场感
     document.documentElement.classList.add('is-booting');
@@ -101,9 +101,5 @@
     start(build());
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
+  init();
 })();
