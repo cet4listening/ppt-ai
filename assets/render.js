@@ -425,7 +425,7 @@
             '<span class="b-badge" aria-hidden="true">' + ICONS[k % ICONS.length] + '</span>' +
             '<span class="b-text">' + esc(t) + '</span></li>';
         }).join('') + '</ul>'
-      : '<div class="bullets-empty anim" style="--i:3">要点还没有填写</div>';
+      : (slide && slide.emptyQuiet ? '' : '<div class="bullets-empty anim" style="--i:3">要点还没有填写</div>');
     var more = raw.length > 12 ? '<div class="bullets-more">还有 ' + (raw.length - 12) + ' 条要点</div>' : '';
 
     return '<div class="s-inner">' + headHTML(title, sub, 'KEY POINTS', '要点') + list + more + '</div>';
@@ -531,7 +531,7 @@
             (s.note ? '<div class="stat-note">' + esc(s.note) + '</div>' : '') +
             '<span class="stat-bar" aria-hidden="true"></span></div>';
         }).join('') + '</div>'
-      : '<div class="bullets-empty anim" style="--i:3">数据还没有填写</div>';
+      : (slide && slide.emptyQuiet ? '' : '<div class="bullets-empty anim" style="--i:3">数据还没有填写</div>');
     return '<div class="s-inner">' + headHTML(title, sub, 'BY THE NUMBERS', '数据') + body + '</div>';
   }
 
@@ -550,7 +550,7 @@
               '<span class="tl-desc">' + esc(it.desc) + '</span>' +
             '</div></li>';
         }).join('') + '</ol>'
-      : '<div class="bullets-empty anim" style="--i:3">清单还没有填写</div>';
+      : (slide && slide.emptyQuiet ? '' : '<div class="bullets-empty anim" style="--i:3">清单还没有填写</div>');
     return '<div class="s-inner">' + headHTML(title, sub, 'CHECKLIST', '清单') + body + '</div>';
   }
 
