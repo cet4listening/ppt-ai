@@ -447,3 +447,54 @@ h1,h2,h3,h4,p{margin:0}
   .img-slot .img-url{grid-column:1 / -1}
   .img-slot .img-cap{grid-column:1 / -1}
 }
+/* ===== 课后思考 / 素材（视频·音频）/ 逐条呈现 ===== */
+.hw-in{
+  width:100%;margin-top:8px;padding:9px 12px;border-radius:10px;
+  border:1px dashed color-mix(in srgb, var(--accent, #7c3aed) 45%, var(--line-soft, #e5e7eb));
+  background:color-mix(in srgb, var(--accent, #7c3aed) 5%, #fff);
+  font-size:13px;color:var(--ink-2, #374151);
+}
+.hw-in::placeholder{color:#9aa3b2}
+
+.s-homework{
+  position:absolute;left:64px;right:64px;bottom:52px;
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 16px;border-radius:12px;
+  background:color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border-left:4px solid var(--accent);
+  font-size:calc(15px * var(--pp-scale, 1));
+  line-height:1.5;color:var(--text);
+}
+.s-homework .hw-label{
+  flex:0 0 auto;font-weight:700;color:var(--accent);
+  letter-spacing:.04em;white-space:nowrap;
+}
+.s-homework .hw-text{opacity:.92}
+.s-end .s-homework,.slide-cover .s-homework{display:none}
+
+.image-media{max-width:100%;max-height:100%;border-radius:12px;display:block;background:#000}
+.media-audio{display:flex;align-items:center;gap:14px;width:100%;padding:18px;
+  border-radius:14px;background:color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border:1px solid color-mix(in srgb, var(--accent) 30%, transparent);}
+.media-audio .audio-badge{width:52px;height:52px;flex:0 0 52px;border-radius:50%;
+  display:grid;place-items:center;font-size:24px;color:#fff;
+  background:linear-gradient(135deg,var(--primary),var(--accent));}
+.media-audio .media-audio-el{flex:1 1 auto;min-width:0}
+
+/* 逐条呈现：默认隐藏，点一下出现一条 */
+.pp-reveal .pp-slide-item .rv{
+  opacity:0;
+  transform:translateY(14px);
+  transition:opacity .38s ease, transform .38s cubic-bezier(.2,.7,.3,1);
+  will-change:opacity, transform;
+}
+.pp-reveal .pp-slide-item .rv.is-shown{opacity:1;transform:none}
+.pp-steplabel{
+  display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;
+  font-size:11px;font-style:normal;letter-spacing:.02em;line-height:20px;
+  color:rgba(255,255,255,.78);background:rgba(255,255,255,.14);vertical-align:1px;
+}
+.chk-block{display:flex;gap:8px;align-items:center;margin:2px 0 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+/* 第 4 步行内快捷操作 */
+.pp-quick{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pp-quick .mini-btn{font-size:11.5px;padding:3px 9px;border-radius:7px}
