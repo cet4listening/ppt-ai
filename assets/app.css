@@ -508,3 +508,12 @@ h1,h2,h3,h4,p{margin:0}
 .perpage-list::-webkit-scrollbar{width:10px}
 .perpage-list::-webkit-scrollbar-thumb{background:#d5d8e3;border-radius:8px}
 .perpage-list::-webkit-scrollbar-thumb:hover{background:#c3c7d6}
+/* ---- 放映提示：等待点击时轻微呼吸 ---- */
+.pp-presenter .pp-hint b{color:#fff;font-weight:700}
+.pp-presenter .pp-hint.is-waiting{color:#fff}
+.pp-presenter .pp-hint.is-waiting b{animation:pp-pulse 1.5s ease-in-out infinite}
+.pp-presenter .pp-steplabel.is-waiting{color:#fff;animation:pp-pulse 1.5s ease-in-out infinite}
+@keyframes pp-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media (prefers-reduced-motion: reduce){
+  .pp-presenter .pp-hint.is-waiting b,.pp-presenter .pp-steplabel.is-waiting{animation:none}
+}
