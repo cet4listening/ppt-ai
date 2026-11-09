@@ -1,0 +1,156 @@
+/* ============================================================
+   media.css —— 图片版式（右 / 左 / 整页 / 背景）+ 素材排版
+   由 app.js 的 image.layout 字段驱动，render.js 输出 .layout-* 类。
+   选择器统一用 `.slide .image-layout.xxx` 覆盖 themes.css 的基础两栏栅格。
+   加载顺序：app.css → themes.css → media.css
+   ============================================================ */
+
+/* ---------- 图在左（默认是图在右） ---------- */
+.slide .image-layout.layout-left {
+  grid-template-columns: 1.08fr 0.92fr;
+}
+.slide .image-layout.layout-left .image-text {
+  grid-column: 2;
+  grid-row: 1;
+}
+.slide .image-layout.layout-left .image-figure {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* ---------- 整页大图：文字在上，图铺满下方 ---------- */
+.slide .image-layout.layout-full {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 22px;
+}
+.slide .image-layout.layout-full .image-text {
+  justify-content: flex-start;
+  max-height: 34%;
+}
+.slide .image-layout.layout-full .image-bullets {
+  column-count: 2;
+  column-gap: 26px;
+}
+.slide .image-layout.layout-full .image-figure {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.slide .image-layout.layout-full .image-figure img,
+.slide .image-layout.layout-full .image-figure video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- 图片作背景：图铺满整页，文字浮在上面 ---------- */
+.slide .image-layout.layout-bg {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  position: relative;
+  isolation: isolate;
+}
+.slide .image-layout.layout-bg .image-text {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  z-index: 2;
+  max-width: 62%;
+  justify-content: center;
+  padding: 8px 4px;
+}
+.slide .image-layout.layout-bg .image-figure {
+  position: absolute;
+  inset: -16px;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: none;
+}
+.slide .image-layout.layout-bg .image-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(6, 9, 22, .52), rgba(6, 9, 22, .26) 42%, rgba(6, 9, 22, .66));
+  pointer-events: none;
+}
+.slide .image-layout.layout-bg .image-figure img,
+.slide .image-layout.layout-bg .image-figure video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.slide .image-layout.layout-bg .image-figure figcaption {
+  position: absolute;
+  left: 22px;
+  bottom: 16px;
+  z-index: 2;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 14px;
+  background: rgba(8, 12, 26, .62);
+  color: #fff;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+}
+.slide .image-layout.layout-bg .image-text h2,
+.slide .image-layout.layout-bg .image-text .s-subtitle,
+.slide .image-layout.layout-bg .image-text p,
+.slide .image-layout.layout-bg .image-bullets li {
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .45);
+}
+.slide .image-layout.layout-bg .image-bullets li .dot {
+  background: rgba(255, 255, 255, .85);
+}
+.slide .image-layout.layout-bg .image-ph {
+  display: none;
+}
+
+/* ---------- 素材：视频 / 音频 ---------- */
+.slide .image-figure video.image-media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #0b0f1d;
+  border-radius: inherit;
+}
+.slide .image-figure .media-audio {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 24px;
+  border-radius: inherit;
+  background: rgba(127, 127, 127, .10);
+}
+.slide .image-figure .media-audio .audio-badge {
+  font-size: 26px;
+  line-height: 1;
+}
+.slide .image-figure .media-audio audio {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* ---------- 小屏：一律竖排 ---------- */
+@media (max-width: 720px) {
+  .slide .image-layout.layout-left {
+    grid-template-columns: 1fr;
+  }
+  .slide .image-layout.layout-left .image-text,
+  .slide .image-layout.layout-left .image-figure {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .slide .image-layout.layout-bg .image-text {
+    max-width: 100%;
+  }
+}
