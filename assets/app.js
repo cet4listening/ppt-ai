@@ -1097,6 +1097,7 @@
         for (let k = 0; k <= listItems.length; k++) {
           const v = Object.assign({}, base);
           if (Array.isArray(s.bullets)) v.bullets = s.bullets.slice(0, k); else v.items = s.items.slice(0, k);
+          if (k === 0) v.emptyQuiet = true;
           vars.push(v);
         }
       } else if (t === 'two-col' && Array.isArray(s.columns) && s.columns.length) {
@@ -1112,7 +1113,7 @@
               remain -= take;
               return Object.assign({}, c, { bullets: c.bullets.slice(0, take), items: c.bullets.slice(0, take) });
             });
-            vars.push(Object.assign({}, base, { columns: vcols }));
+            vars.push(Object.assign({}, base, { columns: vcols, emptyQuiet: k === 0 }));
           }
         }
       } else if (t === 'stats' && Array.isArray(s.stats) && s.stats.length) {
