@@ -300,6 +300,10 @@
   ]
 }`;
 
+  function hasImageMaterials() {
+    return state.attachments.some(a => a && a.kind === 'image');
+  }
+
   function systemPrompt() {
     return [
       '你是一位资深教学设计专家 + PPT 设计师，为中英文课堂（尤其中国中小学）制作课件。',
@@ -312,7 +316,9 @@
       '4) 面向小学生的内容要用词简单、可互动（提问、跟读、游戏）；面向初高中要有知识密度和例题。',
       '5) notes 必须写，给老师的口播提示。',
       '6) 所有文本用简体中文（英语课可以有英文例句，但标题用中文）。',
-      '7) 不要在 JSON 里放图片链接；需要插图的页面用 image 类型并写 caption，图片由用户素材填充。'
+      hasImageMaterials()
+        ? '7) 用户已上传图片素材：需要插图的页面用 image 类型并写 caption，图片会由素材填充；不要在 JSON 里放图片链接。'
+        : '7) 用户**没有上传任何图片**：禁止使用 "image" 页型（会出现空白占位框）。需要版式变化时改用 stats / quote / two-col / list / section；不要在 JSON 里放图片链接。'
     ].join('\n');
   }
 
@@ -360,9 +366,10 @@
     const allowed = ['cover', 'section', 'bullets', 'two-col', 'image', 'quote', 'stats', 'list', 'end'];
     deck.slides = deck.slides.filter(s => s && typeof s === 'object').map((s, i) => {
       const type = allowed.includes(s.type) ? s.type : (i === 0 ? 'cover' : 'bullets');
+      const fallbackTitle = i === 0 ? deck.title : (type === 'end' ? '谢谢观看' : '');
       const out = {
         type,
-        title: String(s.title || (i === 0 ? deck.title : '第 ' + (i + 1) + ' 页')).trim(),
+        title: String(s.title || fallbackTitle).trim(),
         subtitle: s.subtitle ? String(s.subtitle).trim() : '',
         notes: s.notes ? String(s.notes).trim() : ''
       };
@@ -375,6 +382,10 @@
       if (s.quote) out.quote = String(s.quote).trim();
       if (s.author) out.author = String(s.author).trim();
       if (Array.isArray(s.stats)) out.stats = s.stats.slice(0, 4).map(x => ({ value: String((x && x.value) || ''), label: String((x && x.label) || '') }));
+      // 兜底：没有图片素材却给了 image 页型 → 降级成 section（避免空白占位框）
+      if (out.type === 'image' && !(out.image && out.image.src) && !hasImageMaterials()) {
+        out.type = (out.bullets && out.bullets.length) ? 'bullets' : 'section';
+      }
       return out;
     });
     if (!deck.slides.length) throw new Error('模型返回的页面为空');
