@@ -390,3 +390,12 @@ h1,h2,h3,h4,p{margin:0}
 .msg .avatar{overflow:hidden;padding:0;background:#eceef5}
 .msg .avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 .msg.user .avatar,.msg.ai .avatar{background:#eceef5}
+/* ===== 品牌名（较长）在窄屏不折行、不挤爆顶栏 ===== */
+.brand-text strong{white-space:nowrap}
+@media (max-width:760px){
+  .brand{min-width:0;flex:1 1 auto;overflow:hidden}
+  .brand-text{min-width:0;overflow:hidden}
+  .brand-text strong{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;display:block}
+  .topbar-right{gap:8px}
+  #model-chip{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
