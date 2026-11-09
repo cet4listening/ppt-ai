@@ -24,13 +24,45 @@
       '告诉我要做什么课件（年级、学科、课题），我可以先联网找资料，再自动拆分章节、配风格、生成可放映和导出的 PPT。</div></div>';
   }
 
+  /* ---------- 安全：本地密钥存储与错误打码 ---------- */
+  const KEY_SESSION = LS_KEY + '.key';
+  const KEY_PAD = 'pptai-local-v1';
+
+  // 只是「避免明文躺在 localStorage 里」的混淆，不是加密；
+  // 真正的密钥保护要么不落盘（仅本会话），要么用后端代理。
+  function obfuscate(s) {
+    if (!s) return '';
+    var out = '';
+    for (var i = 0; i < s.length; i++) out += String.fromCharCode(s.charCodeAt(i) ^ KEY_PAD.charCodeAt(i % KEY_PAD.length));
+    try { return 'v1:' + btoa(out); } catch (e) { return s; }
+  }
+  function deobfuscate(s) {
+    if (!s) return '';
+    if (s.indexOf('v1:') !== 0) return s;
+    try {
+      var raw = atob(s.slice(3)), out = '';
+      for (var i = 0; i < raw.length; i++) out += String.fromCharCode(raw.charCodeAt(i) ^ KEY_PAD.charCodeAt(i % KEY_PAD.length));
+      return out;
+    } catch (e) { return ''; }
+  }
+  // 任何报错信息里都不允许出现真实密钥
+  function scrub(text) {
+    var s = String(text == null ? '' : text);
+    var k = state.settings.apiKey;
+    if (k && k.length > 6) s = s.split(k).join('sk-***');
+    s = s.replace(/\bsk-[A-Za-z0-9_-]{6,}/g, 'sk-***');
+    s = s.replace(/\bgh[posru]_[A-Za-z0-9]{20,}/g, '***');
+    return s;
+  }
+
   /* ---------------- 状态 ---------------- */
   const state = {
     settings: {
       baseUrl: 'https://api.deepseek.com/v1',
       apiKey: '',
       model: 'deepseek-chat',
-      searchProxy: ''
+      searchProxy: '',
+      rememberKey: true
     },
     messages: [],
     attachments: [],
@@ -46,8 +78,18 @@
 
   function save() {
     try {
+      var remember = state.settings.rememberKey !== false;
+      var settings = Object.assign({}, state.settings);
+      if (remember) {
+        try { sessionStorage.removeItem(KEY_SESSION); } catch (e) {}
+        settings.apiKey = obfuscate(settings.apiKey || '');
+      } else {
+        // 不记住：密钥只放本标签页的 sessionStorage，关掉页面即失效
+        try { sessionStorage.setItem(KEY_SESSION, settings.apiKey || ''); } catch (e) {}
+        settings.apiKey = '';
+      }
       localStorage.setItem(LS_KEY, JSON.stringify({
-        settings: state.settings,
+        settings: settings,
         messages: state.messages.slice(-40),
         deck: state.deck,
         theme: state.theme,
@@ -62,7 +104,14 @@
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
-      if (data.settings) Object.assign(state.settings, data.settings);
+      if (data.settings) {
+        Object.assign(state.settings, data.settings);
+        state.settings.apiKey = deobfuscate(data.settings.apiKey || '');
+        try {
+          var sk = sessionStorage.getItem(KEY_SESSION);
+          if (sk) state.settings.apiKey = sk;
+        } catch (e) {}
+      }
       if (Array.isArray(data.messages)) state.messages = data.messages;
       if (data.deck) state.deck = data.deck;
       if (data.theme) state.theme = Object.assign(state.theme, data.theme);
@@ -120,6 +169,7 @@
     $('#set-apikey').value = state.settings.apiKey || '';
     $('#set-model').value = state.settings.model || '';
     $('#set-proxy').value = state.settings.searchProxy || '';
+    if ($('#set-remember')) $('#set-remember').checked = state.settings.rememberKey !== false;
     $('#test-status').textContent = '';
     $('#test-status').className = 'dlg-status';
     $('#dlg-settings').showModal();
@@ -130,6 +180,7 @@
     state.settings.apiKey = ($('#set-apikey').value || '').trim();
     state.settings.model = ($('#set-model').value || '').trim() || 'deepseek-chat';
     state.settings.searchProxy = ($('#set-proxy').value || '').trim();
+    state.settings.rememberKey = $('#set-remember') ? !!$('#set-remember').checked : true;
     if (window.SEARCH && SEARCH.setCustomProxy) SEARCH.setCustomProxy(state.settings.searchProxy);
     save();
     renderModelChip();
@@ -157,7 +208,7 @@
       st.textContent = '连接成功（' + (Date.now() - t0) + ' ms）';
       st.className = 'dlg-status ok';
     } catch (e) {
-      st.textContent = '失败：' + e.message;
+      st.textContent = '失败：' + scrub(e.message);
       st.className = 'dlg-status err';
     }
   }
@@ -185,16 +236,16 @@
         body: JSON.stringify(body)
       });
     } catch (e) {
-      throw new Error('网络请求失败（可能是跨域或断网）：' + e.message);
+      throw new Error(scrub('网络请求失败（可能是跨域或断网）：' + e.message));
     }
     const text = await res.text();
     let data = null;
     try { data = JSON.parse(text); } catch (e) { /* keep raw */ }
     if (!res.ok) {
       const msg = data && data.error && data.error.message ? data.error.message : ('HTTP ' + res.status + ' ' + text.slice(0, 160));
-      throw new Error(msg);
+      throw new Error(scrub(msg));
     }
-    if (!data || !data.choices || !data.choices[0]) throw new Error('接口返回格式异常：' + text.slice(0, 160));
+    if (!data || !data.choices || !data.choices[0]) throw new Error(scrub('接口返回格式异常：' + text.slice(0, 160)));
     return data.choices[0].message.content || '';
   }
 
@@ -394,7 +445,12 @@
         title: String((c && c.title) || '').trim(),
         items: Array.isArray(c && c.items) ? c.items.map(x => String(x).trim()).filter(Boolean) : []
       }));
-      if (s.image && (s.image.caption || s.image.src)) out.image = { caption: String(s.image.caption || '').trim(), src: s.image.src || '' };
+      if (s.image && (s.image.caption || s.image.src)) {
+        // 只接受本地素材 / data:image / blob: / https，防止模型塞进奇怪协议的地址
+        var rawSrc = String(s.image.src || '');
+        var okSrc = /^(data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,|blob:|https?:\/\/|assets\/|\.\.?\/)/i.test(rawSrc) ? rawSrc : '';
+        out.image = { caption: String(s.image.caption || '').trim(), src: okSrc };
+      }
       if (s.quote) out.quote = String(s.quote).trim();
       if (s.author) out.author = String(s.author).trim();
       if (Array.isArray(s.stats)) out.stats = s.stats.slice(0, 4).map(x => ({ value: String((x && x.value) || ''), label: String((x && x.label) || '') }));
@@ -486,7 +542,7 @@
       setStep(2);
     } catch (e) {
       clearTyping();
-      pushMessage('ai', '生成失败，请重试或检查设置。', { error: e.message });
+      pushMessage('ai', '生成失败，请重试或检查设置。', { error: scrub(e.message) });
       toast('生成失败：' + e.message, 'err', 5000);
     } finally {
       setBusy(false);
@@ -511,7 +567,7 @@
       showPanel(state.step >= 4 ? 'deck' : 'outline');
     } catch (e) {
       clearTyping();
-      pushMessage('ai', '调整失败。', { error: e.message });
+      pushMessage('ai', '调整失败。', { error: scrub(e.message) });
     } finally { setBusy(false); }
   }
 
@@ -526,6 +582,14 @@
     const text = ($('#prompt').value || '').trim();
     if (!text) { toast('先说说要做什么课件'); return; }
     if (state.busy) return;
+    // 防抖 + 频率限制：避免误触/连点把额度打光
+    const now = Date.now();
+    state.sendTimes = (state.sendTimes || []).filter(t => now - t < 60000);
+    if (state.lastSendAt && now - state.lastSendAt < 2000) { toast('稍等一下，正在处理上一句…'); return; }
+    if (state.sendTimes.length >= 8) { toast('一分钟内最多 8 次，歇一会儿再试'); return; }
+    if (text.length > 2000) { toast('描述太长了，请精简到 2000 字以内'); return; }
+    state.lastSendAt = now;
+    state.sendTimes.push(now);
     pushMessage('user', text);
     $('#prompt').value = '';
     autosize();
