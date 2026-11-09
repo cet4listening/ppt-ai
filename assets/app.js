@@ -8,6 +8,22 @@
   const $ = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
 
+  /* ---------------- 身份（头像 / 名字） ---------------- */
+  const AI_NAME = '峙翛';
+  const AVATAR = {
+    user: 'assets/img/avatar-girl.jpg',
+    ai: 'assets/img/avatar-ai.jpg'
+  };
+  function avatarHTML(role) {
+    const src = role === 'user' ? AVATAR.user : AVATAR.ai;
+    return '<div class="avatar"><img src="' + src + '" alt="" draggable="false"></div>';
+  }
+  function welcomeHTML() {
+    return '<div class="msg ai">' + avatarHTML('ai') +
+      '<div class="bubble">你好，我是' + AI_NAME + '（zhì xiāo），你的课件搭子。' +
+      '告诉我要做什么课件（年级、学科、课题），我可以先联网找资料，再自动拆分章节、配风格、生成可放映和导出的 PPT。</div></div>';
+  }
+
   /* ---------------- 状态 ---------------- */
   const state = {
     settings: {
@@ -194,17 +210,17 @@
     box.innerHTML = '';
     const list = state.messages.slice(-40);
     if (!list.length) {
-      box.innerHTML = '<div class="msg ai"><div class="avatar">AI</div><div class="bubble">你好，我是课件助手。告诉我要做什么课件（年级、学科、课题），我可以先联网找资料，再自动拆分章节、配风格、生成可放映和导出的 PPT。</div></div>';
+      box.innerHTML = welcomeHTML();
       return;
     }
     list.forEach(m => {
       const el = document.createElement('div');
       el.className = 'msg ' + (m.role === 'user' ? 'user' : 'ai');
-      const avatar = m.role === 'user' ? '我' : 'AI';
+      const avatar = avatarHTML(m.role === 'user' ? 'user' : 'ai');
       let inner = esc(m.text || '');
       if (m.searchProvider) inner = '<span class="tag">联网 · ' + esc(m.searchProvider) + '</span>' + inner;
       if (m.error) inner += '<div class="err">' + esc(m.error) + '</div>';
-      el.innerHTML = '<div class="avatar">' + avatar + '</div><div class="bubble">' + (inner || '') + '</div>';
+      el.innerHTML = avatar + '<div class="bubble">' + (inner || '') + '</div>';
       box.appendChild(el);
     });
     box.scrollTop = box.scrollHeight;
@@ -215,7 +231,7 @@
     const el = document.createElement('div');
     el.className = 'msg ai';
     el.id = 'typing-msg';
-    el.innerHTML = '<div class="avatar">AI</div><div class="bubble"><span class="typing"><i></i><i></i><i></i></span> ' + esc(label || '思考中…') + '</div>';
+    el.innerHTML = avatarHTML('ai') + '<div class="bubble"><span class="typing"><i></i><i></i><i></i></span> ' + esc(label || '思考中…') + '</div>';
     box.appendChild(el);
     box.scrollTop = box.scrollHeight;
   }
@@ -306,7 +322,7 @@
 
   function systemPrompt() {
     return [
-      '你是一位资深教学设计专家 + PPT 设计师，为中英文课堂（尤其中国中小学）制作课件。',
+      '你叫' + AI_NAME + '，是一位资深教学设计专家 + PPT 设计师，为中英文课堂（尤其中国中小学）制作课件。',
       '输出必须是**严格合法的 JSON**，不要 Markdown 代码块、不要注释、不要多余文字。JSON 结构如下：',
       DECK_SCHEMA,
       '硬性要求：',
