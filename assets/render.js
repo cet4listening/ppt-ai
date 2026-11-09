@@ -471,9 +471,20 @@
     var sub = text(slide.subtitle);
     var bullets = arr(slide.bullets).map(cleanItem).filter(Boolean).slice(0, 4);
 
-    var figure = src
-      ? '<img src="' + esc(src) + '" alt="' + esc(caption || title) + '" loading="lazy">'
-      : '<div class="image-ph" aria-hidden="true">' + IMAGE_ICON + '<b>图片占位</b><span>在编辑区上传 / 选择一张图片</span></div>';
+    var kind = text(image.kind) || 'image';
+    var figure;
+    if (!src) {
+      figure = '<div class="image-ph" aria-hidden="true">' + IMAGE_ICON + '<b>' +
+        (kind === 'video' ? '视频占位' : kind === 'audio' ? '音频占位' : '图片占位') +
+        '</b><span>在编辑区上传 / 选择一个素材</span></div>';
+    } else if (kind === 'video') {
+      figure = '<video class="image-media media-video" src="' + esc(src) + '" controls playsinline preload="metadata"></video>';
+    } else if (kind === 'audio') {
+      figure = '<div class="media-audio"><div class="audio-badge" aria-hidden="true">♪</div>' +
+        '<audio class="image-media media-audio-el" src="' + esc(src) + '" controls preload="metadata"></audio></div>';
+    } else {
+      figure = '<img src="' + esc(src) + '" alt="' + esc(caption || title) + '" loading="lazy">';
+    }
 
     return '' +
       '<div class="s-inner">' +
@@ -608,10 +619,16 @@
       body = '<div class="s-inner"><div class="s-head"><h2 class="s-title">' + esc(text(slide.title) || '未命名页面') + '</h2></div></div>';
     }
 
+    var hwText = text(slide.homework);
+    var hwHTML = hwText
+      ? '<div class="s-homework"><span class="hw-label">课后思考</span><span class="hw-text">' + esc(hwText) + '</span></div>'
+      : '';
+
     el.innerHTML =
       '<div class="s-bg" aria-hidden="true"></div>' +
       '<div class="s-deco" aria-hidden="true"><i class="d1"></i><i class="d2"></i><i class="d3"></i><b class="d-num">' + pad2(index + 1) + '</b></div>' +
       body +
+      hwHTML +
       '<div class="s-mark" aria-hidden="true"><i></i><i></i><i></i></div>' +
       (opts.pageNumbers === false ? '' : '<div class="s-page">' + pad2(index + 1) + '<span>/ ' + pad2(total) + '</span></div>');
 
@@ -768,7 +785,9 @@
      ============================================================ */
   var activePresenter = null;
 
-  function present(deck, theme, startIndex) {
+  function present(deck, theme, startIndex, opts) {
+    opts = opts || {};
+    var revealMode = opts.reveal !== false;
     if (activePresenter) activePresenter.close();
     var slides = arr(deck && deck.slides);
     if (!slides.length || !document.body) return null;
@@ -778,7 +797,7 @@
     var closed = false;
 
     var overlay = document.createElement('div');
-    overlay.className = 'pp-presenter';
+    overlay.className = 'pp-presenter' + (revealMode ? ' pp-reveal' : '');
     overlay.tabIndex = -1;
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
@@ -820,6 +839,47 @@
       return el;
     });
 
+    var REVEAL_SEL = '.bullets > li, .timeline > li, .image-bullets > li, .stats > .stat, .col, .image-figure, .quote-text, .quote-author, .s-homework';
+    var stepsMap = slideEls.map(function (el) {
+      if (!revealMode) return [];
+      var nodes = Array.prototype.slice.call(el.querySelectorAll(REVEAL_SEL));
+      nodes = nodes.filter(function (n) {
+        if (n.closest('.pp-notes')) return false;
+        return !nodes.some(function (m) { return m !== n && m.contains(n); });
+      });
+      nodes.forEach(function (n, i) {
+        n.classList.add('rv');
+        n.classList.remove('anim');
+        n.setAttribute('data-rv', String(i));
+      });
+      return nodes;
+    });
+    var revealed = 0;
+    function stepsNow() { return stepsMap[index] || []; }
+    function setRevealed(n) {
+      var steps = stepsNow();
+      revealed = Math.max(0, Math.min(Number(n) || 0, steps.length));
+      steps.forEach(function (el, i) { el.classList.toggle('is-shown', i < revealed); });
+      updateStepLabel();
+    }
+    function updateStepLabel() {
+      var steps = stepsNow();
+      var box = overlay.querySelector('.pp-steplabel');
+      if (!box) return;
+      box.textContent = steps.length ? '逐条 ' + revealed + ' / ' + steps.length : '';
+      box.style.display = steps.length ? '' : 'none';
+    }
+    function smartNext() {
+      var steps = stepsNow();
+      if (steps.length && revealed < steps.length) { setRevealed(revealed + 1); return; }
+      if (index < total - 1) update(index + 1);
+    }
+    function smartPrev() {
+      var steps = stepsNow();
+      if (steps.length && revealed > 0) { setRevealed(revealed - 1); return; }
+      if (index > 0) { update(index - 1); setRevealed((stepsMap[index] || []).length); }
+    }
+
     var notesEl = overlay.querySelector('.pp-notes');
     var notesBody = overlay.querySelector('.pp-notes-body');
     var counterEl = overlay.querySelector('.pp-counter');
@@ -827,7 +887,8 @@
     var notesOpen = false;
 
     function updateChrome() {
-      counterEl.innerHTML = '<b>' + (index + 1) + '</b><span>/ ' + total + '</span>';
+      counterEl.innerHTML = '<b>' + (index + 1) + '</b><span>/ ' + total + '</span>' +
+        '<i class="pp-steplabel"></i>';
       progressEl.style.transform = 'scaleX(' + ((index + 1) / total) + ')';
       var slide = slides[index] || {};
       var note = text(slide.notes);
@@ -849,6 +910,7 @@
       void cur.offsetWidth;
       cur.classList.add('is-active');
       updateChrome();
+      setRevealed(0);
     }
 
     function fit() {
@@ -891,10 +953,10 @@
       var k = e.key;
       if (k === 'ArrowRight' || k === 'ArrowDown' || k === ' ' || k === 'Spacebar' || k === 'PageDown' || k === 'Enter') {
         e.preventDefault();
-        update(index + (e.shiftKey ? -1 : 1));
+        if (e.shiftKey) { smartPrev(); } else { smartNext(); }
       } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') {
         e.preventDefault();
-        update(index - 1);
+        smartPrev();
       } else if (k === 'Home') {
         e.preventDefault();
         update(0);
@@ -937,8 +999,8 @@
       var target = e.target.closest ? e.target.closest('[data-act]') : null;
       if (!target) return;
       var act = target.getAttribute('data-act');
-      if (act === 'next') update(index + 1);
-      else if (act === 'prev') update(index - 1);
+      if (act === 'next') smartNext();
+      else if (act === 'prev') smartPrev();
       else if (act === 'close') close();
       else if (act === 'notes') toggleNotes();
       else if (act === 'fullscreen') toggleFullscreen();
@@ -949,6 +1011,7 @@
     fit();
     updateChrome();
     slideEls[index].classList.add('is-active');
+    setRevealed(0);
 
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('fullscreenchange', onFullscreenChange);
@@ -960,8 +1023,10 @@
       overlay: overlay,
       close: close,
       goTo: function (i) { update(i); },
-      next: function () { update(index + 1); },
-      prev: function () { update(index - 1); }
+      next: function () { smartNext(); },
+      prev: function () { smartPrev(); },
+      reveal: function (n) { setRevealed(typeof n === 'number' ? n : revealed + 1); },
+      steps: function () { return (stepsMap[index] || []).length; }
     };
     return activePresenter;
   }
