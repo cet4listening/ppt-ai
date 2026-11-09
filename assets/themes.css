@@ -663,8 +663,8 @@
 
 .slide .col-vs {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: calc(50% - 28px);
+  left: calc(50% - 28px);
   z-index: 3;
   display: grid;
   place-items: center;
@@ -678,7 +678,6 @@
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.06em;
-  transform: translate(-50%, -50%);
   box-shadow: 0 8px 26px -14px var(--pp-shadow);
 }
 
@@ -1205,7 +1204,8 @@
 .pp-thumb-host {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--pp-bg, #fff);
 }
@@ -1370,11 +1370,11 @@
 
 .slide.st-editorial .col-vs {
   border-radius: 1px;
-  transform: translate(-50%, -50%) rotate(45deg);
+  rotate: 45deg;
   background: var(--pp-bg);
   box-shadow: none;
 }
-.slide.st-editorial .col-vs span { transform: rotate(-45deg); font-size: 11px; }
+.slide.st-editorial .col-vs span { rotate: -45deg; font-size: 11px; }
 
 /* editorial · 封面 */
 .slide.st-editorial .cover-title { font-weight: 600; letter-spacing: -0.03em; }
@@ -1706,7 +1706,7 @@
   background: var(--pp-accent);
   color: var(--pp-on-primary);
   box-shadow: 3px 4px 0 var(--pp-primary-soft-2);
-  transform: translate(-50%, -50%) rotate(-8deg);
+  rotate: -8deg;
 }
 
 /* playful · 封面 */
