@@ -371,6 +371,22 @@
     return state.attachments.some(a => a && a.kind === 'image');
   }
 
+  /* 把用户上传的图片素材按顺序填进「无图」的插图页 */
+  function fillImageSlides(deck) {
+    const imgs = state.attachments
+      .filter(a => a && a.kind === 'image')
+      .map(a => a.dataUrl || a.src || '')
+      .filter(Boolean);
+    if (!imgs.length || !deck || !Array.isArray(deck.slides)) return deck;
+    let k = 0;
+    deck.slides.forEach(s => {
+      if (s.type === 'image' && !(s.image && s.image.src) && k < imgs.length) {
+        s.image = Object.assign({}, s.image || {}, { src: imgs[k++] });
+      }
+    });
+    return deck;
+  }
+
   function systemPrompt() {
     return [
       '你叫' + AI_NAME + '，是一位资深教学设计专家 + PPT 设计师，为中英文课堂（尤其中国中小学）制作课件。',
@@ -531,7 +547,7 @@
 
       let deck;
       try {
-        deck = normalizeDeck(parseJsonLoose(content));
+        deck = fillImageSlides(normalizeDeck(parseJsonLoose(content)));
       } catch (e) {
         // 让模型自我修复一次
         renderTyping('正在修复结构…');
@@ -540,7 +556,7 @@
             { role: 'system', content: '你是 JSON 修复器。把用户给的内容改写成严格合法的 JSON，只输出 JSON，不要解释。结构：{"title","subtitle","meta":{},"slides":[...]}' },
             { role: 'user', content: content.slice(0, 12000) }
           ], { json: true, temperature: 0.2, maxTokens: 6000 });
-          deck = normalizeDeck(parseJsonLoose(fixed));
+          deck = fillImageSlides(normalizeDeck(parseJsonLoose(fixed)));
         } finally { clearTyping(); }
       }
 
@@ -569,7 +585,7 @@
         { role: 'user', content: '当前课件 JSON：\n' + cur + '\n\n修改要求：' + userRequest }
       ], { json: true, temperature: 0.6, maxTokens: 6000 });
       clearTyping();
-      state.deck = normalizeDeck(parseJsonLoose(content));
+      state.deck = fillImageSlides(normalizeDeck(parseJsonLoose(content)));
       renderOutline();
       if (state.step >= 3) { renderDeckGrid(); }
       pushMessage('ai', '已更新，现在是 ' + state.deck.slides.length + ' 页。');
