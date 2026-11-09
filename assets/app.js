@@ -11,7 +11,7 @@
   /* ---------------- 身份（头像 / 名字） ---------------- */
   const AI_NAME = '峙翛';
   const AVATAR = {
-    user: 'assets/img/avatar-girl.jpg',
+    user: 'assets/img/avatar-girl-face.jpg',
     ai: 'assets/img/avatar-ai.jpg'
   };
   function avatarHTML(role) {
