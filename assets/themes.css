@@ -4028,3 +4028,1369 @@ body.pp-presenting { overflow: hidden !important; }
 .slide.slide-end .s-deco .d-num { display: none; }
 /* 缩略图里页码太小反而干扰，隐藏 */
 .thumb-card .s-page { display: none; }
+
+/* =========================================================================
+   风格 11：blueprint —— 蓝图工程
+   细网格 + 双线图框 + 等宽标注；线框和标注都走 --pp-* 变量
+   ========================================================================= */
+.slide.st-blueprint .s-bg {
+  background:
+    linear-gradient(var(--pp-line) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, var(--pp-line) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(var(--pp-line-strong) 1px, transparent 1px) 0 0 / 96px 96px,
+    linear-gradient(90deg, var(--pp-line-strong) 1px, transparent 1px) 0 0 / 96px 96px,
+    radial-gradient(900px 600px at 90% -12%, var(--pp-primary-soft), transparent 64%),
+    var(--pp-bg);
+}
+.slide.st-blueprint .s-bg::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid var(--pp-line-strong);
+  box-shadow: inset 0 0 0 4px var(--pp-bg), inset 0 0 0 5px var(--pp-line);
+  pointer-events: none;
+}
+
+/* blueprint · 装饰：角框 / 竖向虚线 / 描边页码 */
+.slide.st-blueprint .s-deco .d1 {
+  display: block;
+  top: 36px;
+  left: 36px;
+  width: 30px;
+  height: 30px;
+  border-top: 1.5px solid var(--pp-primary);
+  border-left: 1.5px solid var(--pp-primary);
+}
+.slide.st-blueprint .s-deco .d2 {
+  display: block;
+  right: 36px;
+  bottom: 36px;
+  width: 30px;
+  height: 30px;
+  border-right: 1.5px solid var(--pp-primary);
+  border-bottom: 1.5px solid var(--pp-primary);
+}
+.slide.st-blueprint .s-deco .d3 {
+  display: block;
+  top: 50%;
+  right: 34px;
+  width: 1px;
+  height: 140px;
+  background: repeating-linear-gradient(180deg, var(--pp-line-strong) 0 4px, transparent 4px 9px);
+  transform: translateY(-50%);
+}
+.slide.st-blueprint .s-deco .d-num {
+  display: block;
+  top: 88px;
+  right: 82px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 44px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--pp-line-strong);
+  opacity: 1;
+}
+
+/* blueprint · 角标：三个菱形 */
+.slide.st-blueprint .s-mark { gap: 7px; }
+.slide.st-blueprint .s-mark i {
+  width: 6px;
+  height: 6px;
+  background: var(--pp-primary);
+  transform: rotate(45deg);
+}
+.slide.st-blueprint .s-mark i:nth-child(2) { background: var(--pp-accent); }
+.slide.st-blueprint .s-mark i:nth-child(3) { background: var(--pp-line-strong); }
+
+/* blueprint · 标题区：等宽 kicker + 标注线 */
+.slide.st-blueprint .s-kicker {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.18em;
+}
+.slide.st-blueprint .s-kicker .k-en { letter-spacing: 0.16em; }
+.slide.st-blueprint .s-kicker .k-en::before { content: "DWG / "; color: var(--pp-muted); }
+.slide.st-blueprint .s-kicker .k-cn { border-left-color: var(--pp-line-strong); }
+.slide.st-blueprint .s-head {
+  position: relative;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--pp-line-strong);
+}
+.slide.st-blueprint .s-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 44px;
+  height: 2px;
+  background: var(--pp-accent);
+}
+.slide.st-blueprint .s-title { font-weight: 650; letter-spacing: -0.01em; }
+.slide.st-blueprint .s-sub { letter-spacing: 0.01em; }
+
+/* blueprint · 封面 */
+.slide.st-blueprint .s-inner.cover { padding-top: 56px; }
+.slide.st-blueprint .cover-kicker {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.18em;
+}
+.slide.st-blueprint .ck-line { width: 48px; height: 2px; border-radius: 0; background: var(--pp-primary); }
+.slide.st-blueprint .cover-label {
+  padding: 4px 10px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  color: var(--pp-primary);
+  opacity: 1;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.22em;
+}
+.slide.st-blueprint .cover-rule {
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--pp-line-strong) 0 6px, transparent 6px 12px);
+}
+.slide.st-blueprint .meta-chip {
+  border-radius: 0;
+  border-color: var(--pp-line-strong);
+  background: transparent;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+.slide.st-blueprint .cover-serial {
+  display: flex;
+  top: 116px;
+  right: 92px;
+  gap: 2px;
+  transform: none;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.slide.st-blueprint .cover-serial .cs-num {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--pp-primary);
+  opacity: 1;
+}
+.slide.st-blueprint .cover-serial .cs-txt {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+}
+
+/* blueprint · 章节 */
+.slide.st-blueprint .s-inner.section { gap: 48px; }
+.slide.st-blueprint .section-num b {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 150px;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--pp-primary);
+  opacity: 0.85;
+}
+.slide.st-blueprint .section-num span {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color: var(--pp-accent);
+  letter-spacing: 0.28em;
+}
+.slide.st-blueprint .section-body {
+  padding-left: 32px;
+  border-left: 2px solid var(--pp-line-strong);
+}
+.slide.st-blueprint .section-title { font-weight: 700; letter-spacing: -0.01em; }
+.slide.st-blueprint .section-side { display: none; }
+
+/* blueprint · 要点：点划线分行 */
+.slide.st-blueprint .bullets { row-gap: 0; }
+.slide.st-blueprint .bullets li {
+  align-items: center;
+  gap: 20px;
+  padding: 11px 2px;
+  border-bottom: 1px dashed var(--pp-line-strong);
+}
+.slide.st-blueprint .bullets li:last-child { border-bottom: 0; }
+.slide.st-blueprint .bullets .b-badge {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pp-primary);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+.slide.st-blueprint .b-text { font-weight: 500; }
+
+/* blueprint · 两栏 */
+.slide.st-blueprint .cols { gap: 28px; }
+.slide.st-blueprint .col {
+  padding: 20px 22px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+}
+.slide.st-blueprint .col-a { border-top: 3px solid var(--pp-primary); }
+.slide.st-blueprint .col-b { border-top: 3px solid var(--pp-accent); }
+.slide.st-blueprint .col-head { padding-bottom: 10px; border-bottom: 1px dashed var(--pp-line-strong); }
+.slide.st-blueprint .col-head h3 { font-weight: 700; }
+.slide.st-blueprint .col-badge {
+  border-radius: 0;
+  background: var(--pp-primary);
+  color: var(--pp-on-primary);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+.slide.st-blueprint .col-b .col-badge { background: var(--pp-accent); }
+.slide.st-blueprint .col-sub { color: var(--pp-muted); }
+.slide.st-blueprint .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 0;
+  background: var(--pp-primary);
+}
+.slide.st-blueprint .col-b .dot { background: var(--pp-accent); }
+.slide.st-blueprint .col-vs {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: var(--pp-bg);
+  color: var(--pp-primary);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* blueprint · 图文 */
+.slide.st-blueprint .image-figure {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: var(--pp-surface);
+  box-shadow: none;
+}
+.slide.st-blueprint .image-figure figcaption {
+  border-top: 1px dashed var(--pp-line-strong);
+  background: transparent;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.slide.st-blueprint .image-figure figcaption::before { content: "FIG. "; color: var(--pp-accent); }
+.slide.st-blueprint .image-caption { border-left: 2px solid var(--pp-accent); }
+
+/* blueprint · 引言：工程 NOTE 面板 */
+.slide.st-blueprint .s-inner.quote {
+  align-items: flex-start;
+  padding: 60px 110px;
+  text-align: left;
+}
+.slide.st-blueprint .quote-label {
+  justify-content: flex-start;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.3em;
+}
+.slide.st-blueprint .quote-label span { background: var(--pp-primary); }
+.slide.st-blueprint .quote-mark {
+  height: 54px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 110px;
+  color: var(--pp-primary);
+  opacity: 0.9;
+}
+.slide.st-blueprint .quote-text { font-weight: 600; letter-spacing: -0.01em; }
+.slide.st-blueprint .quote-author { margin-top: 26px; }
+.slide.st-blueprint .qa-line {
+  width: 52px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--pp-accent) 0 4px, transparent 4px 8px);
+}
+
+/* blueprint · 数据 */
+.slide.st-blueprint .stats { gap: 16px; }
+.slide.st-blueprint .stat {
+  padding: 20px 18px 28px;
+  border: 1px solid var(--pp-line-strong);
+  border-top: 2px solid var(--pp-primary);
+  border-radius: 0;
+  background: transparent;
+}
+.slide.st-blueprint .stat-val {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 58px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--pp-text);
+}
+.slide.st-blueprint .stat-label { font-weight: 700; letter-spacing: 0.08em; color: var(--pp-text); }
+.slide.st-blueprint .stat-note { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+.slide.st-blueprint .stat-bar {
+  left: 18px;
+  bottom: 16px;
+  width: 36px;
+  height: 2px;
+  border-radius: 0;
+  background: var(--pp-accent);
+}
+
+/* blueprint · 清单 */
+.slide.st-blueprint .timeline > li {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--pp-line);
+}
+.slide.st-blueprint .timeline > li:last-child { border-bottom: 0; }
+.slide.st-blueprint .timeline > li::before {
+  background: repeating-linear-gradient(180deg, var(--pp-line-strong) 0 4px, transparent 4px 9px);
+}
+.slide.st-blueprint .tl-node {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: var(--pp-bg);
+  color: var(--pp-primary);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+}
+.slide.st-blueprint .tl-title { font-weight: 700; }
+
+/* blueprint · 结束 */
+.slide.st-blueprint .s-inner.end {
+  align-items: flex-start;
+  padding: 0 112px;
+  text-align: left;
+}
+.slide.st-blueprint .end-kicker {
+  justify-content: flex-start;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.28em;
+}
+.slide.st-blueprint .end-title { font-weight: 700; letter-spacing: -0.02em; }
+.slide.st-blueprint .end-sub { max-width: 760px; }
+.slide.st-blueprint .end-contact { justify-content: flex-start; }
+.slide.st-blueprint .end-contact span {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+.slide.st-blueprint .end-art i {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 50%;
+  background: transparent;
+}
+.slide.st-blueprint .end-art i:nth-child(1) { border-style: dashed; }
+.slide.st-blueprint .end-art i:nth-child(2) { border-color: var(--pp-primary-soft-2); }
+.slide.st-blueprint .end-art i:nth-child(3) { border-style: dotted; border-color: var(--pp-accent-soft); }
+.slide.st-blueprint .s-page { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+
+/* =========================================================================
+   风格 12：paper —— 手账笔记
+   点阵纸 + 和纸胶带 + 便签卡片；手作感靠胶带、错位和纸色
+   ========================================================================= */
+.slide.st-paper .s-bg {
+  background:
+    radial-gradient(var(--pp-line-strong) 1px, transparent 1.4px) 0 0 / 22px 22px,
+    radial-gradient(820px 540px at 10% 0%, var(--pp-primary-soft), transparent 62%),
+    radial-gradient(620px 440px at 100% 100%, var(--pp-accent-soft), transparent 66%),
+    var(--pp-bg);
+}
+
+/* paper · 装饰：胶带 / 回形针 / 涂鸦点 */
+.slide.st-paper .s-deco .d1 {
+  display: block;
+  top: -12px;
+  left: 62px;
+  width: 172px;
+  height: 34px;
+  background: var(--pp-accent-soft);
+  border-left: 1px dashed var(--pp-accent);
+  border-right: 1px dashed var(--pp-accent);
+  opacity: 0.9;
+  transform: rotate(-4deg);
+}
+.slide.st-paper .s-deco .d2 {
+  display: block;
+  top: 26px;
+  right: 92px;
+  width: 16px;
+  height: 46px;
+  border: 2px solid var(--pp-line-strong);
+  border-radius: 9px;
+  background: transparent;
+  transform: rotate(14deg);
+}
+.slide.st-paper .s-deco .d3 {
+  display: block;
+  left: 72px;
+  bottom: 74px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pp-accent-soft);
+  box-shadow: 14px -10px 0 var(--pp-accent-soft), 26px 4px 0 var(--pp-primary-soft-2);
+}
+
+/* paper · 角标：三撇手绘线 */
+.slide.st-paper .s-mark { gap: 5px; }
+.slide.st-paper .s-mark i {
+  width: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--pp-muted);
+  transform: rotate(-12deg);
+}
+.slide.st-paper .s-mark i:nth-child(1) { background: var(--pp-accent); }
+.slide.st-paper .s-mark i:nth-child(3) { transform: rotate(10deg); }
+
+/* paper · 标题区 */
+.slide.st-paper .s-kicker { font-family: KaiTi, "Kaiti SC", STKaiti, serif; letter-spacing: 0.16em; }
+.slide.st-paper .s-kicker .k-en {
+  text-decoration: underline wavy var(--pp-accent-soft);
+  text-underline-offset: 5px;
+  letter-spacing: 0.14em;
+}
+.slide.st-paper .s-kicker .k-cn {
+  padding: 1px 8px;
+  border-left: 0;
+  border-radius: 4px;
+  background: var(--pp-accent-soft);
+  color: var(--pp-text);
+}
+.slide.st-paper .s-head { position: relative; padding-bottom: 8px; }
+.slide.st-paper .s-head::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  bottom: 0;
+  width: 84px;
+  height: 8px;
+  background: var(--pp-accent-soft);
+  transform: rotate(-1deg);
+  opacity: 0.8;
+}
+.slide.st-paper .s-title { font-weight: 700; letter-spacing: -0.005em; }
+
+/* paper · 封面 */
+.slide.st-paper .s-inner.cover { padding-top: 58px; }
+.slide.st-paper .cover-kicker { font-family: KaiTi, "Kaiti SC", STKaiti, serif; }
+.slide.st-paper .ck-line { width: 44px; height: 3px; border-radius: 2px; background: var(--pp-accent); }
+.slide.st-paper .cover-label {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 0;
+  border-left: 1px dashed var(--pp-accent);
+  border-right: 1px dashed var(--pp-accent);
+  border-radius: 2px;
+  background: var(--pp-accent-soft);
+  color: var(--pp-text);
+  opacity: 1;
+  transform: rotate(-2deg);
+}
+.slide.st-paper .cover-rule {
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--pp-line-strong) 0 8px, transparent 8px 14px);
+}
+.slide.st-paper .meta-chip {
+  border-radius: 999px;
+  border-color: var(--pp-line-strong);
+  background: var(--pp-surface);
+}
+.slide.st-paper .cover-serial { display: none; }
+
+/* paper · 章节 */
+.slide.st-paper .s-inner.section { gap: 48px; }
+.slide.st-paper .section-num b {
+  font-family: KaiTi, "Kaiti SC", STKaiti, serif;
+  font-size: 140px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pp-primary);
+  opacity: 0.9;
+  text-shadow: 4px 4px 0 var(--pp-accent-soft);
+}
+.slide.st-paper .section-num span { color: var(--pp-accent); letter-spacing: 0.3em; }
+.slide.st-paper .section-body {
+  padding-left: 24px;
+  border-left: 2px dashed var(--pp-line-strong);
+}
+.slide.st-paper .section-title { font-weight: 700; }
+.slide.st-paper .section-side i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pp-accent-soft);
+}
+.slide.st-paper .section-side i:nth-child(2) { background: var(--pp-primary-soft-2); }
+
+/* paper · 要点：便签卡片 */
+.slide.st-paper .bullets {
+  row-gap: 10px;
+  padding-right: 8px;
+}
+.slide.st-paper .bullets li {
+  align-items: center;
+  gap: 16px;
+  padding: 9px 14px;
+  border: 1px solid var(--pp-line);
+  border-radius: 10px;
+  background: var(--pp-surface);
+  box-shadow: 3px 4px 0 var(--pp-line);
+  transform: rotate(-0.3deg);
+}
+.slide.st-paper .bullets li:nth-child(2n) {
+  box-shadow: 3px 4px 0 var(--pp-primary-soft);
+  transform: rotate(0.3deg);
+}
+.slide.st-paper .bullets .b-badge {
+  border: 1px solid var(--pp-accent);
+  border-radius: 50%;
+  background: var(--pp-accent-soft);
+  color: var(--pp-text);
+}
+.slide.st-paper .b-text { font-weight: 500; }
+
+/* paper · 两栏：贴纸卡 + 胶带耳朵 */
+.slide.st-paper .cols { gap: 26px; }
+.slide.st-paper .col {
+  position: relative;
+  padding: 22px 24px 20px;
+  border: 1px solid var(--pp-line);
+  border-radius: 14px;
+  background: var(--pp-surface);
+  box-shadow: 4px 5px 0 var(--pp-line);
+}
+.slide.st-paper .col::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 64px;
+  height: 18px;
+  margin-left: -32px;
+  background: var(--pp-accent-soft);
+  border-left: 1px dashed var(--pp-accent);
+  border-right: 1px dashed var(--pp-accent);
+  transform: rotate(-3deg);
+  opacity: 0.9;
+}
+.slide.st-paper .col-b::before {
+  background: var(--pp-primary-soft);
+  border-color: var(--pp-primary);
+}
+.slide.st-paper .col-head { padding-bottom: 8px; border-bottom: 1px dashed var(--pp-line-strong); }
+.slide.st-paper .col-head h3 { font-weight: 700; }
+.slide.st-paper .col-badge {
+  border-radius: 50%;
+  background: var(--pp-primary);
+  color: var(--pp-on-primary);
+}
+.slide.st-paper .col-b .col-badge { background: var(--pp-accent); }
+.slide.st-paper .col-sub { color: var(--pp-muted); }
+.slide.st-paper .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pp-accent); }
+.slide.st-paper .col-vs {
+  border: 1px dashed var(--pp-line-strong);
+  background: var(--pp-bg);
+  color: var(--pp-muted);
+  box-shadow: 2px 2px 0 var(--pp-line);
+}
+
+/* paper · 图文：拍立得 */
+.slide.st-paper .image-figure {
+  padding: 10px;
+  border: 1px solid var(--pp-line);
+  border-radius: 4px;
+  background: var(--pp-surface);
+  box-shadow: 5px 6px 0 var(--pp-line);
+  transform: rotate(0.6deg);
+}
+.slide.st-paper .image-figure figcaption {
+  padding: 10px 0 2px;
+  border-top: 1px dashed var(--pp-line-strong);
+  background: transparent;
+  font-family: KaiTi, "Kaiti SC", STKaiti, serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.slide.st-paper .image-caption { border-left: 3px solid var(--pp-accent-soft); }
+
+/* paper · 引言：便签纸 */
+.slide.st-paper .s-inner.quote { padding: 56px 120px; }
+.slide.st-paper .s-inner.quote::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 64px 96px 70px;
+  border: 1px solid var(--pp-line);
+  border-radius: 6px;
+  background: var(--pp-surface);
+  box-shadow: 6px 7px 0 var(--pp-accent-soft);
+  transform: rotate(-0.5deg);
+}
+.slide.st-paper .quote-mark { color: var(--pp-accent); }
+.slide.st-paper .quote-text { font-weight: 600; }
+.slide.st-paper .quote-label span { background: var(--pp-accent); }
+.slide.st-paper .qa-line {
+  width: 44px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--pp-accent) 0 5px, transparent 5px 9px);
+}
+
+/* paper · 数据：便签 */
+.slide.st-paper .stat {
+  border: 1px solid var(--pp-line);
+  border-radius: 10px;
+  background: var(--pp-surface);
+  box-shadow: 3px 4px 0 var(--pp-line);
+  transform: rotate(-0.4deg);
+}
+.slide.st-paper .stat:nth-child(2n) {
+  box-shadow: 3px 4px 0 var(--pp-primary-soft);
+  transform: rotate(0.4deg);
+}
+.slide.st-paper .stat-val { color: var(--pp-primary); }
+.slide.st-paper .stat-label { font-weight: 700; }
+.slide.st-paper .stat-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--pp-accent);
+}
+
+/* paper · 清单 */
+.slide.st-paper .timeline > li { padding: 8px 0; }
+.slide.st-paper .timeline > li::before {
+  width: 2px;
+  background: repeating-linear-gradient(180deg, var(--pp-accent-soft) 0 5px, transparent 5px 10px);
+}
+.slide.st-paper .tl-node {
+  border: 1px solid var(--pp-accent);
+  border-radius: 50%;
+  background: var(--pp-accent-soft);
+  color: var(--pp-text);
+}
+.slide.st-paper .tl-title { font-weight: 700; }
+
+/* paper · 结束 */
+.slide.st-paper .s-inner.end { padding: 0 100px; }
+.slide.st-paper .end-title { font-weight: 700; }
+.slide.st-paper .end-contact span {
+  border: 1px dashed var(--pp-line-strong);
+  border-radius: 999px;
+  background: var(--pp-surface);
+}
+.slide.st-paper .end-art i {
+  border: 1px dashed var(--pp-line-strong);
+  background: transparent;
+}
+.slide.st-paper .end-art i:nth-child(2) { border-color: var(--pp-accent-soft); }
+
+/* =========================================================================
+   风格 13：deco —— 装饰艺术 Art Deco
+   对称构图 + 金色双线框 + 放射纹 + 菱形装饰；金色来自 --pp-accent
+   ========================================================================= */
+.slide.st-deco .s-bg {
+  background:
+    repeating-conic-gradient(from -90deg at 50% 118%, var(--pp-accent-soft) 0deg 1.2deg, transparent 1.2deg 9deg),
+    radial-gradient(900px 520px at 50% -10%, var(--pp-primary-soft), transparent 62%),
+    var(--pp-bg);
+}
+.slide.st-deco .s-bg::after {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border: 1px solid var(--pp-accent-soft);
+  box-shadow: inset 0 0 0 5px var(--pp-bg), inset 0 0 0 6px var(--pp-accent-soft);
+  pointer-events: none;
+}
+
+/* deco · 装饰：上下菱形 / 左侧金线 */
+.slide.st-deco .s-deco .d1 {
+  display: block;
+  top: 38px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border: 1px solid var(--pp-accent);
+  background: var(--pp-bg);
+  transform: rotate(45deg);
+}
+.slide.st-deco .s-deco .d2 {
+  display: block;
+  bottom: 34px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1px solid var(--pp-accent-soft);
+  transform: rotate(45deg);
+}
+.slide.st-deco .s-deco .d3 {
+  display: block;
+  top: 50%;
+  left: 22px;
+  width: 1px;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, var(--pp-accent-soft), transparent);
+  transform: translateY(-50%);
+}
+
+/* deco · 角标：三颗菱形 */
+.slide.st-deco .s-mark { gap: 8px; }
+.slide.st-deco .s-mark i {
+  width: 6px;
+  height: 6px;
+  background: var(--pp-accent);
+  transform: rotate(45deg);
+}
+.slide.st-deco .s-mark i:nth-child(2) { background: var(--pp-accent-soft); }
+.slide.st-deco .s-mark i:nth-child(3) {
+  width: 4px;
+  height: 4px;
+  background: var(--pp-line-strong);
+}
+
+/* deco · 标题区：居中 + 金线 */
+.slide.st-deco .s-kicker {
+  justify-content: center;
+  letter-spacing: 0.38em;
+}
+.slide.st-deco .s-kicker .k-en { font-weight: 400; letter-spacing: 0.34em; }
+.slide.st-deco .s-kicker .k-en::before { content: "\2014  "; color: var(--pp-accent); }
+.slide.st-deco .s-kicker .k-en::after { content: "  \2014"; color: var(--pp-accent); }
+.slide.st-deco .s-kicker .k-cn { border-left: 0; padding-left: 0; letter-spacing: 0.26em; }
+.slide.st-deco .s-head {
+  align-items: center;
+  text-align: center;
+  padding-bottom: 14px;
+}
+.slide.st-deco .s-head::after {
+  content: "";
+  width: 72px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pp-accent), transparent);
+}
+.slide.st-deco .s-title {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.slide.st-deco .s-sub { text-align: center; margin-left: auto; margin-right: auto; }
+
+/* deco · 封面 */
+.slide.st-deco .s-inner.cover {
+  align-items: center;
+  padding-top: 56px;
+  text-align: center;
+}
+.slide.st-deco .cover-top { width: 100%; }
+.slide.st-deco .cover-kicker { justify-content: center; }
+.slide.st-deco .ck-line { width: 54px; height: 1px; background: var(--pp-accent); }
+.slide.st-deco .cover-main { margin: 0 auto; max-width: 1040px; }
+.slide.st-deco .cover-title {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.18;
+}
+.slide.st-deco .cover-sub { margin-left: auto; margin-right: auto; }
+.slide.st-deco .cover-label { color: var(--pp-accent); opacity: 1; letter-spacing: 0.4em; }
+.slide.st-deco .cover-foot { width: 100%; }
+.slide.st-deco .cover-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pp-accent), transparent);
+}
+.slide.st-deco .cover-meta { justify-content: center; }
+.slide.st-deco .meta-chip {
+  border-radius: 0;
+  border-color: var(--pp-line-strong);
+  background: transparent;
+  font-family: var(--pp-serif);
+  letter-spacing: 0.16em;
+}
+.slide.st-deco .cover-serial {
+  display: flex;
+  top: 112px;
+  right: 92px;
+  gap: 2px;
+  transform: none;
+  flex-direction: column;
+  align-items: center;
+}
+.slide.st-deco .cover-serial .cs-num {
+  font-family: var(--pp-serif);
+  font-size: 46px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--pp-accent);
+}
+.slide.st-deco .cover-serial .cs-txt { letter-spacing: 0.3em; }
+
+/* deco · 章节：纵向对称 */
+.slide.st-deco .s-inner.section {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 120px;
+  text-align: center;
+}
+.slide.st-deco .section-num {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.slide.st-deco .section-num b {
+  font-family: var(--pp-serif);
+  font-size: 110px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--pp-accent);
+  opacity: 1;
+}
+.slide.st-deco .section-num span { color: var(--pp-accent); letter-spacing: 0.5em; }
+.slide.st-deco .section-body {
+  align-items: center;
+  text-align: center;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--pp-accent-soft);
+}
+.slide.st-deco .section-title {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.slide.st-deco .section-sub { text-align: center; }
+.slide.st-deco .section-side { display: none; }
+
+/* deco · 要点：菱形徽章 */
+.slide.st-deco .bullets { row-gap: 12px; }
+.slide.st-deco .bullets li {
+  align-items: center;
+  gap: 18px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--pp-line);
+}
+.slide.st-deco .bullets li:last-child { border-bottom: 0; }
+.slide.st-deco .bullets .b-badge {
+  border: 1px solid var(--pp-accent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pp-accent);
+  transform: rotate(45deg);
+}
+.slide.st-deco .bullets .b-badge svg { transform: rotate(-45deg); }
+.slide.st-deco .b-text { letter-spacing: 0.01em; }
+
+/* deco · 两栏：双线框 */
+.slide.st-deco .cols { gap: 30px; }
+.slide.st-deco .col {
+  position: relative;
+  padding: 22px 26px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+}
+.slide.st-deco .col::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--pp-accent-soft);
+  pointer-events: none;
+}
+.slide.st-deco .col-head {
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--pp-accent-soft);
+}
+.slide.st-deco .col-head h3 {
+  font-family: var(--pp-serif);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.slide.st-deco .col-badge {
+  border-radius: 0;
+  background: var(--pp-accent);
+  color: var(--pp-bg);
+  font-size: 11px;
+  transform: rotate(45deg);
+}
+.slide.st-deco .col-badge svg { transform: rotate(-45deg); }
+.slide.st-deco .col-sub { color: var(--pp-muted); }
+.slide.st-deco .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 0;
+  background: var(--pp-accent);
+  transform: rotate(45deg);
+}
+.slide.st-deco .col-vs {
+  border: 1px solid var(--pp-accent);
+  border-radius: 0;
+  background: var(--pp-bg);
+  color: var(--pp-accent);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.slide.st-deco .col-vs span {
+  display: block;
+  transform: rotate(-45deg);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* deco · 图文 */
+.slide.st-deco .image-figure {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 5px var(--pp-bg), inset 0 0 0 6px var(--pp-accent-soft);
+}
+.slide.st-deco .image-figure figcaption {
+  border-top: 1px solid var(--pp-accent-soft);
+  background: transparent;
+  font-family: var(--pp-serif);
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+.slide.st-deco .image-caption { border-left: 1px solid var(--pp-accent); }
+
+/* deco · 引言：上下金线 */
+.slide.st-deco .s-inner.quote { padding: 56px 120px; }
+.slide.st-deco .s-inner.quote::before {
+  content: "";
+  position: absolute;
+  inset: 44px 96px;
+  border-top: 1px solid var(--pp-accent);
+  border-bottom: 1px solid var(--pp-accent);
+  pointer-events: none;
+}
+.slide.st-deco .quote-label { letter-spacing: 0.4em; }
+.slide.st-deco .quote-mark { color: var(--pp-accent); }
+.slide.st-deco .quote-text {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+.slide.st-deco .qa-line { width: 40px; height: 1px; background: var(--pp-accent); }
+.slide.st-deco .quote-author { color: var(--pp-muted); }
+
+/* deco · 数据 */
+.slide.st-deco .stat {
+  position: relative;
+  padding: 26px 20px 32px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+}
+.slide.st-deco .stat::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1px solid var(--pp-accent);
+  background: var(--pp-bg);
+  transform: rotate(45deg);
+}
+.slide.st-deco .stat-val {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  color: var(--pp-primary);
+}
+.slide.st-deco .stat-label { letter-spacing: 0.14em; color: var(--pp-text); }
+.slide.st-deco .stat-bar {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 1px;
+  border-radius: 0;
+  background: var(--pp-accent);
+}
+
+/* deco · 清单 */
+.slide.st-deco .timeline > li { padding: 10px 0; }
+.slide.st-deco .timeline > li::before {
+  width: 1px;
+  background: linear-gradient(180deg, var(--pp-accent-soft), transparent);
+}
+.slide.st-deco .tl-node {
+  border: 1px solid var(--pp-accent);
+  border-radius: 0;
+  background: var(--pp-bg);
+  color: var(--pp-text);
+  font-family: var(--pp-serif);
+  transform: rotate(45deg);
+}
+.slide.st-deco .tl-node > b { display: block; transform: rotate(-45deg); }
+.slide.st-deco .tl-title {
+  font-family: var(--pp-serif);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* deco · 结束 */
+.slide.st-deco .s-inner.end { padding: 0 110px; }
+.slide.st-deco .end-kicker { letter-spacing: 0.4em; }
+.slide.st-deco .end-title {
+  font-family: var(--pp-serif);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+.slide.st-deco .end-contact span {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--pp-serif);
+}
+.slide.st-deco .end-art i {
+  border: 1px solid var(--pp-accent-soft);
+  background: transparent;
+}
+.slide.st-deco .end-art i:nth-child(2) { border-color: var(--pp-line-strong); }
+
+/* =========================================================================
+   风格 14：zen —— 留白禅意
+   大留白 + 细线 + 一枚淡墨圆相；只留一点朱红，字号克制
+   ========================================================================= */
+.slide.st-zen .s-bg {
+  background:
+    radial-gradient(780px 540px at 100% 6%, var(--pp-primary-soft), transparent 66%),
+    radial-gradient(540px 400px at 0% 100%, var(--pp-line), transparent 70%),
+    var(--pp-bg);
+}
+.slide.st-zen .s-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 58px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--pp-line-strong) 18%, var(--pp-line-strong) 82%, transparent);
+}
+.slide.st-zen .s-bg::after {
+  content: "";
+  position: absolute;
+  left: 34px;
+  right: 0;
+  bottom: 62px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--pp-line-strong), transparent 68%);
+}
+
+/* zen · 装饰：圆相 / 朱印 */
+.slide.st-zen .s-deco .d1 {
+  display: block;
+  top: 58px;
+  right: 42px;
+  width: 252px;
+  height: 252px;
+  border: 2px solid var(--pp-primary-soft-2);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  opacity: 0.55;
+  transform: rotate(-24deg);
+}
+.slide.st-zen .s-deco .d2 {
+  display: block;
+  right: 82px;
+  bottom: 84px;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 1px;
+  background: var(--pp-accent);
+  box-shadow: inset 0 0 0 2px var(--pp-bg), inset 0 0 0 3px var(--pp-accent);
+  transform: rotate(-4deg);
+  opacity: 0.88;
+}
+.slide.st-zen .s-deco .d3 { display: none; }
+.slide.st-zen .s-deco .d-num { display: none; }
+
+/* zen · 角标：一枚小点 */
+.slide.st-zen .s-mark { gap: 0; }
+.slide.st-zen .s-mark i { display: none; }
+.slide.st-zen .s-mark i:nth-child(1) {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--pp-accent);
+}
+
+/* zen · 标题区 */
+.slide.st-zen .s-kicker {
+  font-size: 10px;
+  letter-spacing: 0.4em;
+}
+.slide.st-zen .s-kicker .k-en { font-weight: 500; color: var(--pp-muted); letter-spacing: 0.38em; }
+.slide.st-zen .s-kicker .k-cn {
+  border-left: 0;
+  padding-left: 0;
+  letter-spacing: 0.32em;
+  color: var(--pp-muted);
+}
+.slide.st-zen .s-head {
+  position: relative;
+  padding-bottom: 22px;
+}
+.slide.st-zen .s-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  height: 1px;
+  background: var(--pp-muted);
+}
+.slide.st-zen .s-title {
+  font-family: var(--pp-serif);
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+}
+.slide.st-zen .s-sub { color: var(--pp-muted); letter-spacing: 0.03em; max-width: 760px; }
+
+/* zen · 封面 */
+.slide.st-zen .s-inner.cover { padding-top: 64px; padding-bottom: 58px; }
+.slide.st-zen .cover-kicker { letter-spacing: 0.38em; }
+.slide.st-zen .ck-line { width: 32px; height: 1px; border-radius: 0; background: var(--pp-muted); }
+.slide.st-zen .cover-label { color: var(--pp-muted); opacity: 1; letter-spacing: 0.36em; }
+.slide.st-zen .cover-title {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.22;
+}
+.slide.st-zen .cover-sub { font-size: 19px; max-width: 760px; }
+.slide.st-zen .cover-rule { height: 1px; background: linear-gradient(90deg, var(--pp-line-strong), transparent); }
+.slide.st-zen .meta-chip {
+  border-radius: 999px;
+  border-color: var(--pp-line);
+  background: transparent;
+  color: var(--pp-muted);
+}
+.slide.st-zen .cover-serial { display: none; }
+
+/* zen · 章节 */
+.slide.st-zen .s-inner.section { gap: 40px; padding: 0 110px; }
+.slide.st-zen .section-num b {
+  font-family: var(--pp-serif);
+  font-size: 96px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--pp-muted);
+  opacity: 0.5;
+}
+.slide.st-zen .section-num span { color: var(--pp-muted); letter-spacing: 0.4em; }
+.slide.st-zen .section-body {
+  padding-left: 34px;
+  border-left: 1px solid var(--pp-line-strong);
+}
+.slide.st-zen .section-title {
+  font-family: var(--pp-serif);
+  font-weight: 400;
+  font-size: 50px;
+  letter-spacing: 0.05em;
+}
+.slide.st-zen .section-sub { color: var(--pp-muted); }
+.slide.st-zen .section-side { display: none; }
+
+/* zen · 要点：细线分行，小朱点 */
+.slide.st-zen .bullets { row-gap: 0; }
+.slide.st-zen .bullets li {
+  align-items: flex-start;
+  gap: 16px;
+  padding: 15px 0;
+  border-top: 1px solid var(--pp-line);
+}
+.slide.st-zen .bullets li:first-child { border-top: 0; }
+.slide.st-zen .bullets .b-badge {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  margin-top: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pp-accent);
+  color: transparent;
+  overflow: hidden;
+}
+.slide.st-zen .bullets .b-badge svg { display: none; }
+.slide.st-zen .b-text { font-weight: 400; line-height: 1.55; letter-spacing: 0.02em; }
+
+/* zen · 两栏：一条中线 */
+.slide.st-zen .cols { gap: 56px; }
+.slide.st-zen .col {
+  padding: 6px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.slide.st-zen .col-a { padding-right: 40px; }
+.slide.st-zen .col-b { padding-left: 40px; border-left: 1px solid var(--pp-line); }
+.slide.st-zen .col-head { padding-bottom: 10px; border-bottom: 1px solid var(--pp-line); }
+.slide.st-zen .col-head h3 {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.slide.st-zen .col-badge {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pp-muted);
+  font-size: 11px;
+}
+.slide.st-zen .col-sub { color: var(--pp-muted); }
+.slide.st-zen .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--pp-accent); }
+.slide.st-zen .col-vs {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pp-muted);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  box-shadow: none;
+}
+
+/* zen · 图文 */
+.slide.st-zen .image-figure {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.slide.st-zen .image-figure figcaption {
+  padding: 10px 0 0;
+  border-top: 1px solid var(--pp-line);
+  background: transparent;
+  color: var(--pp-muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+.slide.st-zen .image-caption {
+  padding-left: 14px;
+  border-left: 1px solid var(--pp-accent);
+  color: var(--pp-muted);
+}
+
+/* zen · 引言 */
+.slide.st-zen .s-inner.quote { padding: 60px 130px; }
+.slide.st-zen .quote-label { letter-spacing: 0.4em; }
+.slide.st-zen .quote-mark {
+  height: 52px;
+  font-size: 120px;
+  color: var(--pp-muted);
+  opacity: 0.35;
+}
+.slide.st-zen .quote-text {
+  font-family: var(--pp-serif);
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+}
+.slide.st-zen .quote-author { color: var(--pp-muted); }
+.slide.st-zen .qa-line { width: 34px; height: 1px; background: var(--pp-accent); }
+
+/* zen · 数据 */
+.slide.st-zen .stats { gap: 24px; }
+.slide.st-zen .stat {
+  padding: 18px 4px 20px;
+  border: 0;
+  border-top: 1px solid var(--pp-line-strong);
+  border-radius: 0;
+  background: transparent;
+}
+.slide.st-zen .stat-val {
+  font-family: var(--pp-serif);
+  font-size: 54px;
+  font-weight: 400;
+  color: var(--pp-text);
+}
+.slide.st-zen .stat-label { font-weight: 500; letter-spacing: 0.16em; color: var(--pp-text); }
+.slide.st-zen .stat-note { color: var(--pp-muted); }
+.slide.st-zen .stat-bar {
+  left: 4px;
+  bottom: 4px;
+  width: 28px;
+  height: 1px;
+  border-radius: 0;
+  background: var(--pp-muted);
+}
+
+/* zen · 清单 */
+.slide.st-zen .timeline > li { padding: 10px 0; }
+.slide.st-zen .timeline > li::before { width: 1px; background: var(--pp-line-strong); }
+.slide.st-zen .tl-node {
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 50%;
+  background: var(--pp-bg);
+  color: var(--pp-muted);
+  font-family: var(--pp-serif);
+  font-size: 11px;
+}
+.slide.st-zen .tl-title {
+  font-family: var(--pp-serif);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.slide.st-zen .tl-desc { color: var(--pp-muted); }
+
+/* zen · 结束 */
+.slide.st-zen .s-inner.end { padding: 0 110px; }
+.slide.st-zen .end-kicker { letter-spacing: 0.4em; }
+.slide.st-zen .end-title {
+  font-family: var(--pp-serif);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+.slide.st-zen .end-sub { color: var(--pp-muted); }
+.slide.st-zen .end-contact span {
+  border: 1px solid var(--pp-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pp-muted);
+}
+.slide.st-zen .end-art i {
+  border: 1px solid var(--pp-line);
+  background: transparent;
+}
+.slide.st-zen .end-art i:nth-child(2) { border-color: var(--pp-line-strong); }
+
+/* ----------------------------------------------------------------
+   扩展入场动画（第二阶段）：slide-right / pop-in
+   同样由 .slide.is-active.anim-* 触发，--i 控制 stagger
+   ---------------------------------------------------------------- */
+.slide.is-active.anim-slide-right .anim {
+  animation-name: pp-slide-right;
+  animation-duration: 0.82s;
+  animation-timing-function: cubic-bezier(0.16, 0.84, 0.28, 1);
+}
+
+.slide.is-active.anim-pop-in .anim {
+  animation-name: pp-pop-in;
+  animation-duration: 0.68s;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pp-slide-right {
+  from { opacity: 0; transform: translate3d(58px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pp-pop-in {
+  0% { opacity: 0; transform: scale(0.86) translate3d(0, 10px, 0); }
+  70% { opacity: 1; transform: scale(1.03) translate3d(0, 0, 0); }
+  100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+
+/* 装饰性页码仍遵守「收尾修饰」的统一隐藏规则：封面 / 章节 / 结束页不显示背景数字 */
+.slide.st-blueprint.slide-cover .s-deco .d-num,
+.slide.st-blueprint.slide-section .s-deco .d-num,
+.slide.st-blueprint.slide-end .s-deco .d-num { display: none; }
